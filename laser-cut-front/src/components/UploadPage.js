@@ -30,7 +30,7 @@ function UploadPage() {
       const apiPromise = analizarArchivo(selectedFile);
       
       const data = await simulateProcessingWithProgress(apiPromise, setProgress, {
-        minProcessingTime: 3000,
+        minProcessingTime: 2000,
       });
       
       navigate('/wizard', {

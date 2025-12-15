@@ -11,16 +11,24 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.lasercut.laser_cut_back.dto.CotizacionResponse;
 import com.example.lasercut.laser_cut_back.exception.BadRequestException;
+import com.example.lasercut.laser_cut_back.repository.MaterialRepository;
 import com.example.lasercut.laser_cut_back.util.DxfParser;
 
 @Service
 public class CotizacionService {
 
+    private final MaterialRepository materialRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(CotizacionService.class);
 
     private static final double FACTOR_DENSIDAD = 8.0;
     private static final double PRECIO_POR_KG = 5000.0;
+    private static final String MM = "mm";
+    private static final String CM = "cm";
 
+    public CotizacionService(MaterialRepository materialRepository) {
+        this.materialRepository = materialRepository;
+    }
     
     private void validateInputs(MultipartFile archivo, double espesorMm, String material, int cantidad) {
         if (archivo == null || archivo.isEmpty()) {
@@ -36,13 +44,16 @@ public class CotizacionService {
         if (cantidad <= 0) {
             throw new BadRequestException("Cantidad debe ser mayor que cero");
         }
+        if (cantidad > 30) {
+            throw new BadRequestException("Cantidad no debe ser mayor que treinta");
+        }
         if (material == null) {
             throw new BadRequestException("Material es requerido");
         }
-        // String m = material.trim().toLowerCase();
-        // if (!"hierro".equals(m) && !"inoxidable".equals(m)) {
-        //     throw new BadRequestException("Material no soportado. Opciones: 'hierro' o 'inoxidable'");
-        // }
+        if (materialRepository.findByNombreIgnoreCase(material.trim().toLowerCase()).isEmpty())
+        {
+            throw new BadRequestException("Material no soportado");
+        }
     }
 
     private double round(double v, int decimals) {
@@ -58,10 +69,10 @@ public class CotizacionService {
         double ancho = wh[0];
         double alto = wh[1];
 
-        if ("cm".equalsIgnoreCase(unidad)) {
+        if (CM.equalsIgnoreCase(unidad)) {
             ancho *= 10;
             alto *= 10;
-        } else if (!"mm".equalsIgnoreCase(unidad)) {
+        } else if (!MM.equalsIgnoreCase(unidad)) {
             throw new BadRequestException("Unidad no soportada. Opciones válidas: 'mm' o 'cm'");
         }
 

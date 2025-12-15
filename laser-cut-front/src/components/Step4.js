@@ -64,7 +64,6 @@ function Step4({ wizardState, onBack, setHeaderControls }) {
       
       setQuoteData(data);
       
-      // Navegar a la página de cotización con todos los datos
       navigate('/quote', {
         state: {
           quoteData: data,
