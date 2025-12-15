@@ -1,6 +1,7 @@
 package com.example.lasercut.laser_cut_back.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -65,40 +66,42 @@ public class CotizacionService {
     public CotizacionResponse calcular(MultipartFile archivo, double espesorMm, String material, int cantidad, String unidad) throws IOException {
         validateInputs(archivo, espesorMm, material, cantidad);
 
-        double[] wh = DxfParser.getWidthHeightMillimeters(archivo.getInputStream());
-        double ancho = wh[0];
-        double alto = wh[1];
+        try (InputStream dimensionsStream = archivo.getInputStream()) {
+            double[] wh = DxfParser.getWidthHeightMillimeters(dimensionsStream);
+            double ancho = wh[0];
+            double alto = wh[1];
 
-        if (CM.equalsIgnoreCase(unidad)) {
-            ancho *= 10;
-            alto *= 10;
-        } else if (!MM.equalsIgnoreCase(unidad)) {
-            throw new BadRequestException("Unidad no soportada. Opciones válidas: 'mm' o 'cm'");
+            if (CM.equalsIgnoreCase(unidad)) {
+                ancho *= 10;
+                alto *= 10;
+            } else if (!MM.equalsIgnoreCase(unidad)) {
+                throw new BadRequestException("Unidad no soportada. Opciones válidas: 'mm' o 'cm'");
+            }
+
+            double peso = (ancho * alto * espesorMm * FACTOR_DENSIDAD) / 1_000_000.0;
+            double precioUnitario = peso * PRECIO_POR_KG;
+            double precioTotal = precioUnitario * cantidad;
+
+            peso = round(peso, 4);
+            precioUnitario = round(precioUnitario, 2);
+            precioTotal = round(precioTotal, 2);
+
+            CotizacionResponse resp = new CotizacionResponse();
+            resp.setMaterial(material);
+            resp.setAncho(round(ancho, 2));
+            resp.setAlto(round(alto, 2));
+            resp.setEspesor(round(espesorMm, 2));
+            resp.setPeso(peso);
+            resp.setPrecioUnitario(precioUnitario);
+            resp.setCantidad(cantidad);
+            resp.setUnidad(unidad);
+            resp.setPrecioTotal(precioTotal);
+
+            logger.info("Cotización calculada: material={}, ancho={}mm, alto={}mm, espesor={}mm, peso={}kg, precioUnitario={}, cantidad={}, unidad={}, precioTotal={}",
+                material, ancho, alto, espesorMm, peso, precioUnitario, cantidad, unidad, precioTotal);
+
+            return resp;
         }
-
-        double peso = (ancho * alto * espesorMm * FACTOR_DENSIDAD) / 1_000_000.0;
-        double precioUnitario = peso * PRECIO_POR_KG;
-        double precioTotal = precioUnitario * cantidad;
-
-        peso = round(peso, 4);
-        precioUnitario = round(precioUnitario, 2);
-        precioTotal = round(precioTotal, 2);
-
-        CotizacionResponse resp = new CotizacionResponse();
-        resp.setMaterial(material);
-        resp.setAncho(round(ancho, 2));
-        resp.setAlto(round(alto, 2));
-        resp.setEspesor(round(espesorMm, 2));
-        resp.setPeso(peso);
-        resp.setPrecioUnitario(precioUnitario);
-        resp.setCantidad(cantidad);
-        resp.setUnidad(unidad);
-        resp.setPrecioTotal(precioTotal);
-
-        logger.info("Cotización calculada: material={}, ancho={}mm, alto={}mm, espesor={}mm, peso={}kg, precioUnitario={}, cantidad={}, unidad={}, precioTotal={}",
-            material, ancho, alto, espesorMm, peso, precioUnitario, cantidad, unidad, precioTotal);
-
-        return resp;
     }
-
+    
 }

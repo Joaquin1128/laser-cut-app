@@ -1,5 +1,6 @@
 package com.example.lasercut.laser_cut_back.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -28,22 +29,26 @@ public class ArchivoService {
             throw new BadRequestException("El archivo debe ser un .dxf");
         }
 
-        try (InputStream inputStream = archivo.getInputStream()) {
-            double[] wh = DxfParser.getWidthHeightMillimeters(inputStream);
+        byte[] fileBytes = archivo.getBytes();
+
+        try (InputStream dimensionsStream = new ByteArrayInputStream(fileBytes)) {
+            double[] wh = DxfParser.getWidthHeightMillimeters(dimensionsStream);
             double ancho = wh[0];
             double alto = wh[1];
 
-            String vistaPrevia = DxfPreviewGenerator.generarVistaPreviaBase64(archivo.getInputStream());
+            try (InputStream previewStream = new ByteArrayInputStream(fileBytes)) {
+                String vistaPrevia = DxfPreviewGenerator.generarVistaPreviaBase64(previewStream);
 
-            ArchivoResponse resp = new ArchivoResponse();
-            resp.setNombre(name);
-            resp.setAncho(ancho);
-            resp.setAlto(alto);
-            resp.setVistaPreviaBase64(vistaPrevia);
+                ArchivoResponse resp = new ArchivoResponse();
+                resp.setNombre(name);
+                resp.setAncho(ancho);
+                resp.setAlto(alto);
+                resp.setVistaPreviaBase64(vistaPrevia);
 
-            logger.info("Archivo analizado: {} (ancho={}mm, alto={}mm)", name, ancho, alto);
+                logger.info("Archivo analizado: {} (ancho={}mm, alto={}mm)", name, ancho, alto);
 
-            return resp;
+                return resp;
+            }
         }
     }
 
