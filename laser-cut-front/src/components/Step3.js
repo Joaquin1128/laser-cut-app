@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './Step.css';
 
-function Step4({ wizardState, onNext, onBack, setHeaderControls }) {
+function Step3({ wizardState, onNext, onBack, setHeaderControls }) {
   const {
     quantity,
     setQuantity,
@@ -10,8 +10,8 @@ function Step4({ wizardState, onNext, onBack, setHeaderControls }) {
   const [tempQuantity, setTempQuantity] = useState(1);
   const MAX_QUANTITY = 30;
   const canContinue = tempQuantity && tempQuantity > 0 && tempQuantity <= MAX_QUANTITY;
-  const pressTimerRef = useRef(null);
-  const pressTypeRef = useRef(null);
+  const pressTimerRef = React.useRef(null);
+  const pressTypeRef = React.useRef(null);
 
   useEffect(() => {
     setQuantity(tempQuantity);
@@ -135,4 +135,4 @@ function Step4({ wizardState, onNext, onBack, setHeaderControls }) {
   );
 }
 
-export default Step4;
+export default Step3;

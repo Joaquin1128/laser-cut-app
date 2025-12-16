@@ -4,7 +4,7 @@ import { getCatalogo } from '../services/api';
 import metalIcon from '../assets/icons/stainless.jpg';
 import inoxIcon from '../assets/icons/stainless-steel.jpg';
 
-function Step3({ wizardState, onNext, onBack, setHeaderControls }) {
+function Step2({ wizardState, onNext, onBack, setHeaderControls }) {
   const {
     material,
     setMaterial,
@@ -75,7 +75,7 @@ function Step3({ wizardState, onNext, onBack, setHeaderControls }) {
 
   useEffect(() => {
     setIsSelectingThickness(Boolean(material));
-  }, []);
+  }, [material]);
 
   const handleBackToMaterials = useCallback(() => {
     setIsSelectingThickness(false);
@@ -224,4 +224,4 @@ function Step3({ wizardState, onNext, onBack, setHeaderControls }) {
   );
 }
 
-export default Step3;
+export default Step2;

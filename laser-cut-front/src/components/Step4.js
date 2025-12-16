@@ -4,6 +4,7 @@ import './Step.css';
 import { calcularCotizacion } from '../services/api';
 import { simulateProcessingWithProgress } from '../utils/processingSimulator';
 import ProcessingModal from './ProcessingModal';
+import { formatDimensionValue } from '../utils/formatters';
 
 function Step4({ wizardState, onBack, setHeaderControls }) {
   const navigate = useNavigate();
@@ -19,7 +20,6 @@ function Step4({ wizardState, onBack, setHeaderControls }) {
     setIsLoading,
     setError,
     setQuoteData,
-    quoteData,
   } = wizardState;
 
   const [progress, setProgress] = useState(0);
@@ -28,13 +28,6 @@ function Step4({ wizardState, onBack, setHeaderControls }) {
     file && fileData && unitConfirmed && material && thickness && quantity > 0 && !isLoading
   );
 
-  const formatDimensionValue = useCallback((value) => {
-    if (value === null || value === undefined) return '--';
-    const numeric = Number(value);
-    if (Number.isNaN(numeric)) return '--';
-    return numeric.toFixed(3).replace(/\.?0+$/, '');
-  }, []);
-
   const dimensionsText = useMemo(() => {
     if (!fileData || !unitConfirmed) return '--';
     const ancho = formatDimensionValue(fileData.ancho);
@@ -42,7 +35,7 @@ function Step4({ wizardState, onBack, setHeaderControls }) {
     return unitConfirmed === 'INCH'
       ? `${ancho}" × ${alto}"`
       : `${ancho} × ${alto} mm`;
-  }, [fileData, unitConfirmed, formatDimensionValue]);
+  }, [fileData, unitConfirmed]);
 
   const handleGenerate = useCallback(async () => {
     if (!canGenerate) return;
@@ -80,7 +73,7 @@ function Step4({ wizardState, onBack, setHeaderControls }) {
     } finally {
       setIsLoading(false);
     }
-  }, [canGenerate, setIsLoading, setError, file, material, thickness, quantity, unitConfirmed, setQuoteData]);
+  }, [canGenerate, setIsLoading, setError, file, material, thickness, quantity, unitConfirmed, setQuoteData, navigate, fileData, finish, setProgress]);
 
   useEffect(() => {
     const controls = {

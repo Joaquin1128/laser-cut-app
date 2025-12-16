@@ -68,7 +68,7 @@
   width: var(--step-circle-size);
   height: var(--step-circle-size);
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--color-white);
   border: 2px solid #d1d5db;
   display: flex;
   align-items: center;
@@ -108,11 +108,11 @@
 .progress-step-circle.completed {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-white);
 }
 
 .progress-step-circle.completed .step-icon {
-  color: #ffffff;
+  color: var(--color-white);
 }
 
 .progress-step-label {

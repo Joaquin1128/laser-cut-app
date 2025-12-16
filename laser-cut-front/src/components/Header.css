@@ -44,7 +44,7 @@
   position: relative;
   background: transparent;
   border: none;
-  color: #ffffff;
+  color: var(--color-white);
   cursor: pointer;
   padding: 0.5rem;
   display: flex;
@@ -61,7 +61,7 @@
 
 .cart-icon {
   font-size: var(--font-size-2xl);
-  color: #ffffff;
+  color: var(--color-white);
 }
 
 .cart-badge {
@@ -69,7 +69,7 @@
   top: -4px;
   right: -4px;
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-white);
   border-radius: 50%;
   width: 20px;
   height: 20px;
@@ -84,10 +84,10 @@
 
 .btn-login-header {
   background: transparent;
-  color: #ffffff;
+  color: var(--color-white);
   border: none;
   padding: 0.75rem 1.5rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: var(--font-family-buttons);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   border-radius: 4px;

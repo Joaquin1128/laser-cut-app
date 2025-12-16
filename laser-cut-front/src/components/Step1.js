@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import './Step.css';
+import { formatDimensionValue } from '../utils/formatters';
 
 function Step1({ wizardState, onNext, onBack, setHeaderControls }) {
   const {
@@ -12,18 +13,6 @@ function Step1({ wizardState, onNext, onBack, setHeaderControls }) {
   const canContinue = Boolean(file && fileData && unitConfirmed);
 
   const selectedUnit = unitConfirmed;
-
-  const formatDimensionValue = (value) => {
-    if (value === null || value === undefined) {
-      return '--';
-    }
-    const numericValue = Number(value);
-    if (Number.isNaN(numericValue)) {
-      return '--';
-    }
-
-    return numericValue.toFixed(3).replace(/\.?0+$/, '');
-  };
 
   const anchoFormatted = formatDimensionValue(fileData?.ancho);
   const altoFormatted = formatDimensionValue(fileData?.alto);

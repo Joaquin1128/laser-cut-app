@@ -1,4 +1,4 @@
-import React, { useRef, Suspense, useState } from 'react';
+import React, { useRef, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
@@ -8,7 +8,6 @@ import './Preview3D.css';
 
 // Componente para extruir el SVG a 3D
 function ExtrudedShape({ svgString, thickness }) {
-  const meshRef = useRef();
   const groupRef = useRef();
 
   React.useEffect(() => {

@@ -161,7 +161,6 @@ function Wizard() {
       if (Number.isNaN(numeric)) {
         return null;
       }
-
       return numeric.toFixed(3).replace(/\.?0+$/, '');
     };
 

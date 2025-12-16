@@ -39,21 +39,12 @@
 }
 
 .cart-empty .btn-primary {
-  border-radius: 4px;
   padding: 0.8rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--color-primary);
-  color: #ffffff;
-  border: 1px solid transparent;
+  font-family: var(--font-family-buttons);
 }
 
 .cart-empty .btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-dark);
-  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+  box-shadow: var(--shadow-primary-sm);
 }
 
 .cart-empty .btn-primary:disabled {

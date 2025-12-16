@@ -1,7 +1,7 @@
 import React from 'react';
 import './Wizard.css';
 
-function WizardHeaderButtons({
+function WizardButtons({
   showBack = true,
   showNext = true,
   backLabel = 'ANTERIOR',
@@ -41,4 +41,4 @@ function WizardHeaderButtons({
   );
 }
 
-export default WizardHeaderButtons;
+export default WizardButtons;
