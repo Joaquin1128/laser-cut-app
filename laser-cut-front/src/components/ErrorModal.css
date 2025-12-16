@@ -33,7 +33,7 @@
   right: 0.75rem;
   background: transparent;
   border: none;
-  font-size: 1.4rem;
+  font-size: var(--font-size-2xl);
   color: #a0a0a0;
   cursor: pointer;
   transition: color 0.2s ease, transform 0.2s ease;
@@ -51,18 +51,18 @@
   align-items: center;
   justify-content: center;
   color: var(--color-primary);
-  font-size: 4rem;
+  font-size: var(--font-size-6xl);
 }
 
 .error-modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-heading);
   margin: 0.5rem 0;
 }
 
 .error-modal-message {
-  font-size: 0.95rem;
+  font-size: var(--font-size-md);
   color: var(--color-text-muted-2);
   margin: 0 1rem 1.5rem;
   line-height: 1.6;
@@ -73,8 +73,8 @@
   color: #ffffff;
   border: none;
   padding: 1rem;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;

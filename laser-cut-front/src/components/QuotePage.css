@@ -33,8 +33,8 @@
 .quote-actions .btn-secondary {
   border-radius: 4px;
   padding: 0.6rem;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 1rem;
@@ -109,7 +109,7 @@
   }
 
   .quote-title {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
   }
 
   .quote-details-card {

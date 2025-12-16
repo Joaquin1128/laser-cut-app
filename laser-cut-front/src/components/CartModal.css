@@ -33,7 +33,7 @@
   right: 0.75rem;
   background: transparent;
   border: none;
-  font-size: 1.4rem;
+  font-size: var(--font-size-2xl);
   color: #a0a0a0;
   cursor: pointer;
   transition: color 0.2s ease, transform 0.2s ease;
@@ -52,12 +52,12 @@
   align-items: center;
   justify-content: center;
   color: var(--color-success);
-  font-size: 4rem;
+  font-size: var(--font-size-6xl);
 }
 
 .cart-modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-heading);
   margin: 0 0 2rem 0;
 }
@@ -74,8 +74,8 @@
 .cart-modal-btn-secondary {
   border-radius: 4px;
   padding: 0.6rem;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
@@ -145,12 +145,12 @@
   .cart-modal-icon {
     width: 80px;
     height: 80px;
-    font-size: 3rem;
+    font-size: var(--font-size-5xl);
     margin-bottom: 1.5rem;
   }
 
   .cart-modal-title {
-    font-size: 1.1rem;
+    font-size: var(--font-size-lg);
     margin-bottom: 1.5rem;
   }
 }

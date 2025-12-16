@@ -123,8 +123,8 @@
 }
 
 .progress-step-text {
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -137,7 +137,7 @@
 .progress-step-wrapper.active .progress-step-text,
 .progress-step-wrapper.completed .progress-step-text {
   color: var(--color-text);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 @media (max-width: 768px) {
@@ -159,7 +159,7 @@
   }
 
   .progress-step-text {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     max-width: 95px;
   }
 }

@@ -53,14 +53,14 @@
 }
 
 .processing-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-heading);
   margin: 0 0 1rem 0;
 }
 
 .processing-message {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-text-muted-2);
   margin: 0;
 }
@@ -86,7 +86,7 @@
   color: #c53030;
   padding: 1rem 1.5rem;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   text-align: center;
   width: 100%;
   max-width: 1200px;
@@ -110,14 +110,14 @@
 }
 
 .dropzone-main-text {
-  font-size: 1.5rem;
-  font-weight: 500;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-medium);
   color: var(--color-heading);
   margin-bottom: 1rem;
 }
 
 .dropzone-divider {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-text-muted-2);
   margin: 1.5rem 0;
 }
@@ -127,8 +127,8 @@
   color: #ffffff;
   border: none;
   padding: 1rem;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -144,13 +144,13 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted-2);
   margin-top: 1rem;
 }
 
 .security-icon {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
 }
 
 .process-steps {
@@ -179,22 +179,22 @@
 }
 
 .process-step-icon {
-  font-size: 3rem;
+  font-size: var(--font-size-5xl);
   color: #1a1a1a;
   margin-bottom: 1rem;
   opacity: 0.8;
 }
 
 .process-step-title {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: #1a1a1a;
   margin-bottom: 0.5rem;
   text-align: center;
 }
 
 .process-step-description {
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   text-align: center;
   line-height: 1.5;
@@ -212,7 +212,7 @@
   }
 
   .dropzone-main-text {
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
   }
 
   .file-type-icons {

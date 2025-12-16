@@ -166,7 +166,7 @@ function Step3({ wizardState, onNext, onBack, setHeaderControls }) {
                       }}
                     >
                       <span>
-                        {e.espesorMm} mm {e.espesorInch ? `(${e.espesorInch} in)` : ''}
+                        {e.espesorMm} MM {e.espesorInch ? `(${e.espesorInch} IN)` : ''}
                       </span>
                     </button>
                   );
@@ -184,7 +184,7 @@ function Step3({ wizardState, onNext, onBack, setHeaderControls }) {
                       }}
                     />
                     <span>
-                      {e.espesorMm} mm {e.espesorInch ? `(${e.espesorInch} in)` : ''}
+                      {e.espesorMm} MM {e.espesorInch ? `(${e.espesorInch} IN)` : ''}
                     </span>
                   </label>
                 );
