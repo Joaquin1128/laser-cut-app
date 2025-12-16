@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import { FaLock, FaFileUpload, FaIndustry, FaShippingFast } from 'react-icons/fa';
+import { FaLock, FaUpload } from 'react-icons/fa';
 import './UploadPage.css';
 import dxfIcon from '../assets/icons/dxf.png';
 import { analizarArchivo } from '../services/api';
@@ -72,6 +72,38 @@ function UploadPage() {
       <Header />
 
       <div className="landing-content-wrapper">
+        <div className="timeline-container">
+          <div className="timeline-step">
+            <div className="timeline-step-number">1</div>
+            <div className="timeline-step-content">
+              <h3 className="timeline-step-title">Cotizá tu diseño</h3>
+              <p className="timeline-step-description">
+              Subí tu archivo y seleccioná material, espesor, terminación y cantidad de piezas. Nuestro sistema calculará el costo automáticamente y te mostrará la cotización al instante, para que sepas cuánto vas a pagar antes de continuar.
+              </p>
+            </div>
+          </div>
+
+          <div className="timeline-step">
+            <div className="timeline-step-number">2</div>
+            <div className="timeline-step-content">
+              <h3 className="timeline-step-title">Confirmá tu compra</h3>
+              <p className="timeline-step-description">
+                Revisá todos los detalles de tu pedido: material, cantidad, espesor y precio final. Cuando estés seguro, agregalo al carrito y completá la compra de manera rápida y segura. Podés corregir cualquier detalle antes de finalizar.
+              </p>
+            </div>
+          </div>
+
+          <div className="timeline-step">
+            <div className="timeline-step-number">3</div>
+            <div className="timeline-step-content">
+              <h3 className="timeline-step-title">Retirá o recibí tus piezas</h3>
+              <p className="timeline-step-description">
+                Elegí cómo querés recibir tu pedido: retiro en nuestro local o envío según el peso y la cantidad de piezas. Nos aseguramos de que tus piezas lleguen listas para usar, bien protegidas y sin complicaciones.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div {...getRootProps()} className={`dropzone-container ${isDragActive ? 'drag-active' : ''} ${isProcessing ? 'disabled' : ''}`}>
           <input {...getInputProps()} />
 
@@ -80,7 +112,7 @@ function UploadPage() {
           </div>
 
           <div className="dropzone-main-text">
-            Arrastra un archivo aquí para comenzar
+            Arrastrá un archivo aquí para comenzar
           </div>
 
           <div className="dropzone-divider">o</div>
@@ -93,40 +125,16 @@ function UploadPage() {
             }}
             disabled={isProcessing}
           >
+            <FaUpload className="btn-upload-icon" />
             BUSCAR ARCHIVO
           </button>
 
+          <div className="security-divider"></div>
           <div className="security-message">
             <FaLock className="security-icon" />
             <span>
               <strong>¡Tu diseño está en buenas manos!</strong> Tus archivos se tratarán con confidencialidad, y conservarás todos tus derechos de propiedad intelectual.
             </span>
-          </div>
-        </div>
-
-        <div className="process-steps">
-          <div className="process-step">
-            <FaFileUpload className="process-step-icon" />
-            <h3 className="process-step-title">Subí tu diseño</h3>
-            <p className="process-step-description">
-              Cargá tu archivo 2D, elegí material y cantidad. Recibí la cotización al instante.
-            </p>
-          </div>
-
-          <div className="process-step">
-            <FaIndustry className="process-step-icon" />
-            <h3 className="process-step-title">Confirmá tu pedido</h3>
-            <p className="process-step-description">
-              Revisá los detalles y confirmá tu orden. Comenzamos la producción de inmediato.
-            </p>
-          </div>
-
-          <div className="process-step">
-            <FaShippingFast className="process-step-icon" />
-            <h3 className="process-step-title">Recibí tus piezas</h3>
-            <p className="process-step-description">
-              Enviamos tus piezas con control de calidad y seguimiento de envío en tiempo real.
-            </p>
           </div>
         </div>
       </div>

@@ -509,8 +509,9 @@
 .btn-secondary,
 .btn-link {
   padding: 0.875rem 2rem;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -554,6 +555,7 @@
   background: transparent;
   color: var(--color-primary);
   padding: 0 0 0.50rem 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   letter-spacing: -0.02em;
@@ -624,8 +626,9 @@
 .quote-actions .btn-primary {
   border-radius: 4px;
   padding: 0.8rem;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 1rem;
