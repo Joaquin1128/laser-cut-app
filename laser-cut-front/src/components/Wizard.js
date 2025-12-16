@@ -9,6 +9,7 @@ import Step4 from './Step4';
 import ErrorModal from './ErrorModal';
 import WizardButtons from './WizardButtons';
 import Header from './Header';
+import WizardSteps from './WizardSteps';
 
 function Wizard() {
   const navigate = useNavigate();
@@ -108,17 +109,6 @@ function Wizard() {
     setQuoteData,
   };
 
-  const formatDimension = (value, unit) => {
-    if (!value) return '--';
-    if (unit === 'INCH') {
-      return (value / 25.4).toFixed(2);
-    }
-    return value.toFixed(0);
-  };
-
-  const dimensionLabel = fileData
-    ? `${formatDimension(fileData.ancho, unitConfirmed)} × ${formatDimension(fileData.alto, unitConfirmed)} ${unitConfirmed === 'INCH' ? 'in' : 'mm'}`
-    : null;
 
   const renderStep = () => {
     switch (currentStep) {
@@ -215,79 +205,20 @@ function Wizard() {
     [headerControls, handleBack, handleNext]
   );
 
+  const stepLabels = ['Unidades', 'Material', 'Cantidad', 'Confirmación'];
+
   return (
     <div className="wizard">
-      <Header>
-        <div className="progress-bar progress-bar-desktop">
-          {['Unidades', 'Material', 'Cantidad', 'Confirmación'].map((label, index) => {
-            const stepNumber = index + 1;
-            const isActive = currentStep === stepNumber;
-            const isCompleted = currentStep > stepNumber;
-            const summary = stepSummaries[index];
-            const wrapperClass = [
-              'progress-step-wrapper',
-              isActive ? 'active' : '',
-              isCompleted ? 'completed' : '',
-            ]
-              .filter(Boolean)
-              .join(' ');
-
-            return (
-              <div key={label} className={wrapperClass}>
-                <div className={`progress-step-circle ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
-                  <span>{stepNumber}</span>
-                </div>
-                <div className="progress-step-label">
-                  <span
-                    className={`progress-step-text ${summary ? 'filled' : ''}`}
-                    title={summary || label}
-                  >
-                    {summary || label}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+      <Header />
+      <div className="wizard-steps-wrapper">
+        <WizardSteps 
+          stepLabels={stepLabels}
+          stepSummaries={stepSummaries}
+          activeStep={currentStep}
+        />
         </div>
-        {dimensionLabel && (
-          <div className="wizard-dimensions">{dimensionLabel}</div>
-        )}
-      </Header>
 
       <div className="wizard-container">
-        <div className="progress-bar progress-bar-mobile">
-          {['Unidades', 'Material', 'Cantidad', 'Confirmación'].map((label, index) => {
-            const stepNumber = index + 1;
-            const isActive = currentStep === stepNumber;
-            const isCompleted = currentStep > stepNumber;
-            const summary = stepSummaries[index];
-            const wrapperClass = [
-              'progress-step-wrapper',
-              'progress-step-wrapper-mobile',
-              isActive ? 'active' : '',
-              isCompleted ? 'completed' : '',
-            ]
-              .filter(Boolean)
-              .join(' ');
-
-            return (
-              <div key={`mobile-${label}`} className={wrapperClass}>
-                <div className={`progress-step-circle ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
-                  <span>{stepNumber}</span>
-                </div>
-                <div className="progress-step-label">
-                  <span
-                    className={`progress-step-text ${summary ? 'filled' : ''}`}
-                    title={summary || label}
-                  >
-                    {summary || label}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
         <div className="wizard-content">
           <div className="wizard-step-wrapper">
             <WizardButtons {...headerButtonProps} />
@@ -297,7 +228,7 @@ function Wizard() {
           </div>
 
           <div className="wizard-preview">
-            <Preview fileData={fileData} quoteData={quoteData} currentStep={currentStep} />
+            <Preview fileData={fileData} quoteData={quoteData} currentStep={currentStep} thickness={thickness} />
           </div>
         </div>
       </div>

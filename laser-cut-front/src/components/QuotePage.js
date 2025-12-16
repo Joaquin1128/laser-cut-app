@@ -124,7 +124,7 @@ function QuotePage() {
         </div>
 
         <div className="quote-preview">
-          <Preview fileData={fileData} quoteData={quoteData} currentStep={5} />
+          <Preview fileData={fileData} quoteData={quoteData} currentStep={5} thickness={quoteData?.espesor} />
         </div>
       </div>
 

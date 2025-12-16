@@ -21,12 +21,12 @@ public class ArchivoService {
 
     public ArchivoResponse analizar(MultipartFile archivo) throws IOException {
         if (archivo == null || archivo.isEmpty()) {
-            throw new BadRequestException("Archivo DXF no puede estar vacío");
+            throw new BadRequestException("El archivo DXF no puede estar vacío.");
         }
 
         String name = archivo.getOriginalFilename();
         if (name == null || !name.toLowerCase().endsWith(".dxf")) {
-            throw new BadRequestException("El archivo debe ser un .dxf");
+            throw new BadRequestException("El archivo debe ser un .dxf.");
         }
 
         byte[] fileBytes = archivo.getBytes();

@@ -1,0 +1,60 @@
+.preview-3d-container {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  position: relative;
+  background: transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  border: none;
+}
+
+.preview-3d-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.preview-3d-zoom-controls {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.zoom-control-btn {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--color-border);
+  background: white;
+  color: var(--color-text);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 0;
+}
+
+.zoom-control-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+.zoom-control-btn:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: scale(1.05);
+}
+
+.zoom-control-btn:active {
+  transform: scale(0.95);
+}

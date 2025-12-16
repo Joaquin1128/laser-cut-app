@@ -20,7 +20,7 @@ function UploadPage() {
     if (!acceptedFiles || acceptedFiles.length === 0) return;
     const selectedFile = acceptedFiles[0];
     if (!selectedFile.name.toLowerCase().endsWith('.dxf')) {
-      setError('Por favor, sube un archivo DXF válido');
+      setError('Por favor, suba un archivo DXF válido.');
       return;
     }
     setIsProcessing(true);
@@ -40,7 +40,7 @@ function UploadPage() {
         }
       });
     } catch (err) {
-      setError(err.message || 'Error al analizar el archivo');
+      setError(err.message || 'Error al analizar el archivo.');
       setIsProcessing(false);
     }
   };
@@ -69,14 +69,14 @@ function UploadPage() {
 
   return (
     <div className="upload-page">
-      <Header containerClass="landing-header" logoClass="landing-logo" />
+      <Header />
 
       <div className="landing-content-wrapper">
         <div {...getRootProps()} className={`dropzone-container ${isDragActive ? 'drag-active' : ''} ${isProcessing ? 'disabled' : ''}`}>
           <input {...getInputProps()} />
 
           <div className="file-type-icons">
-            <img src={dxfIcon} alt="DXF" className="file-type-icon" />
+            <img src={dxfIcon} alt="DXF" className="file-type-icon" draggable={false} />
           </div>
 
           <div className="dropzone-main-text">
@@ -135,7 +135,7 @@ function UploadPage() {
         <ProcessingModal
           progress={progress}
           title="Procesando archivo..."
-          message="Estamos analizando tu archivo DXF. Esto puede tomar unos segundos."
+          message="Estamos analizando tu archivo DXF. Esto puede demorar unos segundos."
         />
       )}
 

@@ -77,12 +77,7 @@
   border: 1px solid var(--color-border);
   border-radius: 4px;
   background: var(--color-bg);
-  transition: box-shadow 0.2s ease;
   position: relative;
-}
-
-.cart-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .cart-item-preview {
@@ -187,15 +182,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
   border-radius: 4px;
   width: 36px;
   height: 36px;
-}
-
-.cart-item-remove:hover {
-  color: var(--color-primary);
-  background: #fdecec;
 }
 
 .cart-summary {

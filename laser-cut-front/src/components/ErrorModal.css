@@ -83,10 +83,9 @@
   display: inline-block;
 }
 
-.error-modal-action:hover {
+.error-modal-action:hover:not(:disabled) {
   background: var(--color-primary-dark);
-  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
-  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
 }
 
 @keyframes fadeIn {

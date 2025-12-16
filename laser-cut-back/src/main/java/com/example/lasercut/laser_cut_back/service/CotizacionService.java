@@ -25,7 +25,7 @@ public class CotizacionService {
     private static final double FACTOR_DENSIDAD = 8.0;
     private static final double PRECIO_POR_KG = 5000.0;
     private static final String MM = "mm";
-    private static final String CM = "cm";
+    private static final String INCH = "inch";
 
     public CotizacionService(MaterialRepository materialRepository) {
         this.materialRepository = materialRepository;
@@ -33,23 +33,23 @@ public class CotizacionService {
     
     private void validateInputs(MultipartFile archivo, double espesorMm, String material, int cantidad) {
         if (archivo == null || archivo.isEmpty()) {
-            throw new BadRequestException("Archivo DXF no puede estar vacío");
+            throw new BadRequestException("El archivo DXF no puede estar vacío.");
         }
         String name = archivo.getOriginalFilename();
         if (name == null || !name.toLowerCase().endsWith(".dxf")) {
-            throw new BadRequestException("El archivo debe ser un .dxf");
+            throw new BadRequestException("El archivo debe ser un .dxf.");
         }
         if (espesorMm <= 0) {
-            throw new BadRequestException("Espesor debe ser mayor que cero");
+            throw new BadRequestException("El espesor debe ser mayor que cero.");
         }
         if (cantidad <= 0) {
-            throw new BadRequestException("Cantidad debe ser mayor que cero");
+            throw new BadRequestException("La cantidad debe ser mayor que cero.");
         }
         if (cantidad > 30) {
-            throw new BadRequestException("Cantidad no debe ser mayor que treinta");
+            throw new BadRequestException("La cantidad no debe ser mayor que treinta.");
         }
         if (material == null) {
-            throw new BadRequestException("Material es requerido");
+            throw new BadRequestException("El material es requerido.");
         }
         if (materialRepository.findByNombreIgnoreCase(material.trim().toLowerCase()).isEmpty())
         {
@@ -71,11 +71,11 @@ public class CotizacionService {
             double ancho = wh[0];
             double alto = wh[1];
 
-            if (CM.equalsIgnoreCase(unidad)) {
+            if (INCH.equalsIgnoreCase(unidad)) {
                 ancho *= 10;
                 alto *= 10;
             } else if (!MM.equalsIgnoreCase(unidad)) {
-                throw new BadRequestException("Unidad no soportada. Opciones válidas: 'mm' o 'cm'");
+                throw new BadRequestException("Unidad no soportada. Opciones válidas: 'mm' o 'inch'.");
             }
 
             double peso = (ancho * alto * espesorMm * FACTOR_DENSIDAD) / 1_000_000.0;

@@ -1,3 +1,39 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+  padding: 1rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: none;
+  border-bottom: none;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+.header-logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.header-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 2rem;
+  position: relative;
+}
+
 .header-right-actions {
   display: flex;
   align-items: center;
@@ -16,10 +52,11 @@
   justify-content: center;
   transition: all 0.2s ease;
   border-radius: 4px;
+  height: 40px;
 }
 
 .cart-icon-button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
 }
 
 .cart-icon {
@@ -41,11 +78,40 @@
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 600;
-  border: 2px solid #2d2d2d;
+  border: 2px solid #3a3a3a;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.btn-login-header {
+  background: transparent;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 40px;
+}
+
+.btn-login-header:hover {
+  background: transparent;
+}
+
 @media (max-width: 768px) {
+  .header {
+    padding: 1rem 1.5rem;
+  }
+
+  .header-logo-img {
+    height: 32px;
+  }
+
+  .header-content {
+    margin: 0 1rem;
+  }
+
   .cart-icon {
     font-size: 1.3rem;
   }
@@ -56,5 +122,10 @@
     font-size: 0.7rem;
     top: -3px;
     right: -3px;
+  }
+
+  .btn-login-header {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
   }
 }
