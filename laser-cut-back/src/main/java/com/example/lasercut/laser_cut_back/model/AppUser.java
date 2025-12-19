@@ -1,5 +1,7 @@
 package com.example.lasercut.laser_cut_back.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,16 +9,28 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * Entidad Usuario
+ * 
+ * PREPARACIÓN FUTURA:
+ * - Este usuario se vinculará con Pedidos cuando se implemente el sistema de pedidos
+ * - Los pedidos tendrán una relación ManyToOne con AppUser
+ * - Ejemplo futuro: @OneToMany(mappedBy = "usuario") private List<Pedido> pedidos;
+ * 
+ * INTEGRACIÓN MERCADO PAGO:
+ * - Cuando se implemente Mercado Pago, se guardará el customer_id de MP en este usuario
+ * - Se agregará campo: private String mercadoPagoCustomerId;
+ */
 @Entity
-@Table(name = "app-user")
+@Table(name = "app_user")
 public class AppUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false)
+    private String nombre;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -24,13 +38,32 @@ public class AppUser {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     public AppUser() {
     }
 
-    public AppUser(Long id, String email, String password) {
-        this.id = id;
+    public AppUser(String nombre, String email, String password) {
+        this.nombre = nombre;
         this.email = email;
         this.password = password;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @jakarta.persistence.PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @jakarta.persistence.PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -41,12 +74,12 @@ public class AppUser {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getNombre() {
+        return nombre;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public String getEmail() {
@@ -65,4 +98,20 @@ public class AppUser {
         this.password = password;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
 }

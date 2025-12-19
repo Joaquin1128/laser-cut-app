@@ -8,6 +8,8 @@ import com.example.lasercut.laser_cut_back.model.AppUser;
 
 public interface UserRepository extends JpaRepository<AppUser, Long> {
 
-    Optional<AppUser> findByUsername(String username);
+    Optional<AppUser> findByEmail(String email);
+    
+    boolean existsByEmail(String email);
 
 }
