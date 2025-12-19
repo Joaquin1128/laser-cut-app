@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { ordersService } from '../services/ordersService';
 import Header from './Header';
 import { FaTrash } from 'react-icons/fa';
+import AuthModal from './AuthModal';
 import './CartPage.css';
 import './QuotePage.css';
 import './Wizard.css';
@@ -11,15 +14,67 @@ import './Step.css';
 function CartPage() {
   const navigate = useNavigate();
   const { cartItems, removeFromCart, clearCart, getCartTotal } = useCart();
+  const { isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const total = getCartTotal();
 
   const handleContinueShopping = () => {
     navigate('/upload');
   };
 
-  const handleProceedToPayment = () => {
-    // ACÁ VA LÓGICA DE PAGO
-    console.log('Proceder al pago - no implementado aún');
+  const handleProceedToPayment = async () => {
+    // Si no está autenticado, mostrar modal de login
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    // TODO: INTEGRACIÓN MERCADO PAGO
+    // Cuando se integre MP, aquí se creará la preferencia de pago:
+    // 1. Crear preferencia de pago con los items del carrito
+    // 2. Obtener init_point de MP
+    // 3. Redirigir al usuario al checkout de MP
+    // 4. Procesar webhook cuando MP confirme el pago
+    // 5. El webhook creará el pedido automáticamente
+    
+    // Por ahora, crear pedidos directamente desde el carrito
+    setIsCreatingOrder(true);
+    try {
+      // Crear un pedido por cada item del carrito
+      const pedidosPromises = cartItems.map(async (item) => {
+        const pedidoData = {
+          material: item.material?.nombre || 'Desconocido',
+          thickness: item.material?.espesor || 0,
+          quantity: item.cantidad || 1,
+          totalPrice: item.precioTotal || 0,
+          metadata: JSON.stringify({
+            archivoNombre: item.archivo?.nombre,
+            dimensiones: item.archivo?.dimensiones,
+            terminacion: item.terminacion,
+          }),
+        };
+        return ordersService.crearPedido(pedidoData);
+      });
+
+      await Promise.all(pedidosPromises);
+      
+      // Limpiar carrito después de crear los pedidos
+      clearCart();
+      
+      // Redirigir a página de éxito o mostrar mensaje
+      alert('¡Pedidos creados exitosamente! Podés verlos en "PEDIDOS" del menú.');
+      
+      // TODO: Cuando se integre MP, aquí se redirigirá al checkout:
+      // const preferencia = await mercadoPagoService.crearPreferencia(cartItems, user);
+      // window.location.href = preferencia.init_point;
+      
+    } catch (error) {
+      console.error('Error al crear pedidos:', error);
+      alert('Error al crear los pedidos. Por favor, intentá nuevamente.');
+    } finally {
+      setIsCreatingOrder(false);
+    }
   };
 
   if (cartItems.length === 0) {
@@ -35,7 +90,7 @@ function CartPage() {
               type="button"
               onClick={handleContinueShopping}
             >
-              SEGUIR COTIZANDO
+              COTIZAR PIEZAS
             </button>
           </div>
         </div>
@@ -49,7 +104,7 @@ function CartPage() {
       <div className="cart-page-container">
         <div className="cart-content wizard-step-material">
           <div className="step">
-            <h3 className="step-title">Mi carrito</h3>
+            <h3 className="step-title">Carrito</h3>
             <p className="step-description">Revisá los items agregados a tu carrito.</p>
           
           <div className="cart-items">
@@ -137,13 +192,18 @@ function CartPage() {
               className="btn-primary"
               type="button"
               onClick={handleProceedToPayment}
+              disabled={isCreatingOrder}
             >
-              PROCEDER AL PAGO
+              {isCreatingOrder ? 'CREANDO PEDIDOS...' : 'PROCEDER AL PAGO'}
             </button>
           </div>
           </div>
         </div>
       </div>
+
+      {showAuthModal && (
+        <AuthModal onClose={() => setShowAuthModal(false)} />
+      )}
     </div>
   );
 }

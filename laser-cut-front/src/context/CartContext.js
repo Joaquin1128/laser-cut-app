@@ -1,6 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { cartService } from '../services/cartService';
 
+/**
+ * CartContext - Contexto global del carrito
+ * 
+ * PREPARACIÓN FUTURA:
+ * - Cuando se implemente el sistema de pedidos, aquí se vincularán los items del carrito al usuario
+ * - Se agregará método: crearPedido() que guardará el carrito como pedido en la BD
+ * - Los pedidos se vincularán al usuario autenticado
+ * 
+ * INTEGRACIÓN MERCADO PAGO:
+ * - Cuando se integre MP, aquí se procesará el pago del carrito
+ * - Se agregará método: procesarPago() que creará la preferencia en MP
+ * - Se redirigirá al checkout de Mercado Pago
+ */
 const CartContext = createContext();
 
 export const useCart = () => {
