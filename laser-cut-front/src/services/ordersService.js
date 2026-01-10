@@ -79,4 +79,29 @@ export const ordersService = {
       throw error;
     }
   },
+
+  async crearPreferenciaPago(pedidoId, urls) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/${pedidoId}/create-preference`, {
+        method: 'POST',
+        headers: authService.getAuthHeaders(),
+        body: JSON.stringify(urls),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          authService.removeToken();
+          throw new Error('Sesión expirada');
+        }
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al crear preferencia de pago:', error);
+      throw error;
+    }
+  },
 };
