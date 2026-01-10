@@ -17,6 +17,7 @@ public class PedidoResponse {
     private Integer quantity;
     private BigDecimal totalPrice;
     private String metadata;
+    private String paymentStatus; // Estado del pago de Mercado Pago
 
     public PedidoResponse() {
     }
@@ -30,6 +31,9 @@ public class PedidoResponse {
         this.quantity = pedido.getQuantity();
         this.totalPrice = pedido.getTotalPrice();
         this.metadata = pedido.getMetadata();
+        if (pedido.getPaymentStatus() != null) {
+            this.paymentStatus = pedido.getPaymentStatus().name();
+        }
     }
 
     public Long getId() {
@@ -94,6 +98,14 @@ public class PedidoResponse {
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
+    }
+    
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
     
 }

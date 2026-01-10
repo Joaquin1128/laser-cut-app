@@ -52,6 +52,17 @@ public class Pedido {
     @Column(columnDefinition = "TEXT")
     private String metadata; // JSON string para información adicional del corte
 
+    // Campos de Mercado Pago
+    @Column(name = "mp_preference_id")
+    private String mercadoPagoPreferenceId;
+
+    @Column(name = "mp_payment_id")
+    private String mercadoPagoPaymentId;
+
+    @Column(name = "payment_status")
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+
     public Pedido() {
     }
 
@@ -144,11 +155,43 @@ public class Pedido {
         this.metadata = metadata;
     }
 
+    public String getMercadoPagoPreferenceId() {
+        return mercadoPagoPreferenceId;
+    }
+
+    public void setMercadoPagoPreferenceId(String mercadoPagoPreferenceId) {
+        this.mercadoPagoPreferenceId = mercadoPagoPreferenceId;
+    }
+
+    public String getMercadoPagoPaymentId() {
+        return mercadoPagoPaymentId;
+    }
+
+    public void setMercadoPagoPaymentId(String mercadoPagoPaymentId) {
+        this.mercadoPagoPaymentId = mercadoPagoPaymentId;
+    }
+
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
     public enum OrderStatus {
         PENDIENTE,
         EN_PROCESO,
         FINALIZADO,
         CANCELADO
+    }
+    
+    public enum PaymentStatus {
+        PENDING,
+        APPROVED,
+        REJECTED,
+        CANCELLED,
+        REFUNDED
     }
     
 }

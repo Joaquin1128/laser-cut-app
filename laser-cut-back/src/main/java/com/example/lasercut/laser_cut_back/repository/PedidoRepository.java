@@ -1,6 +1,7 @@
 package com.example.lasercut.laser_cut_back.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,5 +14,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findByUsuarioIdOrderByCreatedAtDesc(Long usuarioId);
     
     List<Pedido> findByUsuarioId(Long usuarioId);
+    
+    Optional<Pedido> findByMercadoPagoPreferenceId(String preferenceId);
 
 }

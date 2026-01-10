@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/analizar-archivo").permitAll() // Mantener público para pruebas
                 .requestMatchers("/api/catalogo").permitAll() // Mantener público
                 .requestMatchers("/api/cotizacion").permitAll() // Mantener público por ahora
+                .requestMatchers("/api/orders/webhook").permitAll() // Webhook debe ser público
                 .requestMatchers("/api/orders/**").authenticated() // Pedidos requieren autenticación
                 .anyRequest().authenticated()
             )

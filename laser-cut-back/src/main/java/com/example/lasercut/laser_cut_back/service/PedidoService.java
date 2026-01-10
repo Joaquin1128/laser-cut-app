@@ -78,5 +78,60 @@ public class PedidoService {
 
         return new PedidoResponse(pedido);
     }
+
+    public Pedido obtenerPedidoEntity(Long pedidoId) {
+        return pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new BadRequestException("Pedido no encontrado"));
+    }
+
+    @Transactional
+    public void actualizarPreferenceId(Long pedidoId, String preferenceId) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+        pedido.setMercadoPagoPreferenceId(preferenceId);
+        pedidoRepository.save(pedido);
+    }
+
+    public Pedido obtenerPedidoPorPreferenceId(String preferenceId) {
+        return pedidoRepository.findByMercadoPagoPreferenceId(preferenceId)
+                .orElseThrow(() -> new BadRequestException("Pedido no encontrado con preferenceId: " + preferenceId));
+    }
+
+    @Transactional
+    public void actualizarEstadoPago(Long pedidoId, String paymentId, String paymentStatus) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+        pedido.setMercadoPagoPaymentId(paymentId);
+        
+        // Mapear estado de MP a PaymentStatus
+        Pedido.PaymentStatus status = mapearEstadoPago(paymentStatus);
+        pedido.setPaymentStatus(status);
+        
+        // Actualizar estado del pedido según el pago
+        if (status == Pedido.PaymentStatus.APPROVED) {
+            pedido.setStatus(Pedido.OrderStatus.EN_PROCESO);
+        } else if (status == Pedido.PaymentStatus.REJECTED || status == Pedido.PaymentStatus.CANCELLED) {
+            pedido.setStatus(Pedido.OrderStatus.CANCELADO);
+        }
+        
+        pedidoRepository.save(pedido);
+    }
+
+    private Pedido.PaymentStatus mapearEstadoPago(String mpStatus) {
+        if (mpStatus == null) {
+            return Pedido.PaymentStatus.PENDING;
+        }
+        
+        switch (mpStatus.toLowerCase()) {
+            case "approved":
+                return Pedido.PaymentStatus.APPROVED;
+            case "rejected":
+                return Pedido.PaymentStatus.REJECTED;
+            case "cancelled":
+                return Pedido.PaymentStatus.CANCELLED;
+            case "refunded":
+                return Pedido.PaymentStatus.REFUNDED;
+            default:
+                return Pedido.PaymentStatus.PENDING;
+        }
+    }
     
 }
