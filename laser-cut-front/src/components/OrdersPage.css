@@ -82,10 +82,6 @@
   font-family: var(--font-family-buttons);
 }
 
-.orders-empty .btn-primary:hover:not(:disabled) {
-  box-shadow: var(--shadow-primary-sm);
-}
-
 .orders-empty .btn-primary:disabled {
   background: var(--color-disabled-bg);
   color: var(--color-disabled-text);

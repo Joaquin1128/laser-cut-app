@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCheckCircle } from 'react-icons/fa';
 import './CartModal.css';
 
 function CartModal({ onClose }) {
@@ -49,9 +48,32 @@ function CartModal({ onClose }) {
           ×
         </button>
         <div className="cart-modal-icon">
-          <FaCheckCircle />
+          <svg 
+            className="cart-modal-icon-svg" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.1" />
+            <path 
+              d="M9 12L11 14L15 10" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
+            <circle 
+              cx="12" 
+              cy="12" 
+              r="10" 
+              stroke="currentColor" 
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
-        <h2 className="cart-modal-title">¡Listo! Añadimos la pieza a tu carrito.</h2>
+        <h2 className="cart-modal-title">La pieza fue añadida a tu carrito.</h2>
         <div className="cart-modal-actions">
           <button
             className="cart-modal-btn-secondary"

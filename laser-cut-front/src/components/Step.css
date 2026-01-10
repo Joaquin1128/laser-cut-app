@@ -525,7 +525,6 @@
 
 .btn-primary:hover:not(:disabled) {
   background: var(--color-primary-dark);
-  box-shadow: var(--shadow-primary-sm);
 }
 
 .btn-primary:disabled {
@@ -638,7 +637,6 @@
 
 .quote-actions .btn-primary:hover:not(:disabled) {
   background: var(--color-primary-dark);
-  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
 }
 
 .quote-actions .btn-primary:disabled {

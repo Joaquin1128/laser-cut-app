@@ -14,6 +14,7 @@
   background: var(--color-bg);
   border-radius: 12px;
   width: 400px;
+  height: 400px;
   max-width: 90vw;
   display: flex;
   flex-direction: column;
@@ -21,7 +22,7 @@
   justify-content: center;
   text-align: center;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-  animation: slideUpScale 0.3s ease;
+  animation: slideUp 0.3s ease;
   padding: 2rem;
   box-sizing: border-box;
   position: relative;
@@ -55,19 +56,26 @@
 .cart-modal-icon {
   width: 100px;
   height: 100px;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-success);
+  color: var(--color-success, #10b981);
   font-size: var(--font-size-6xl);
+}
+
+.cart-modal-icon-svg {
+  width: 80px;
+  height: 80px;
+  color: var(--color-success, #10b981);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .cart-modal-title {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
   color: var(--color-heading);
-  margin: 0 0 2rem 0;
+  margin: 0.5rem 0 1.5rem 0;
 }
 
 .cart-modal-actions {
@@ -76,6 +84,7 @@
   gap: 0.2rem;
   width: 100%;
   max-width: 280px;
+  margin-top: auto;
 }
 
 .cart-modal-btn-primary,
@@ -134,13 +143,13 @@
   }
 }
 
-@keyframes slideUpScale {
+@keyframes slideUp {
   from {
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(20px);
     opacity: 0;
   }
   to {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     opacity: 1;
   }
 }
@@ -148,18 +157,29 @@
 @media (max-width: 768px) {
   .cart-modal {
     width: 90vw;
+    height: auto;
+    min-height: 400px;
     padding: 1.5rem;
   }
 
   .cart-modal-icon {
     width: 80px;
     height: 80px;
-    font-size: var(--font-size-5xl);
     margin-bottom: 1.5rem;
+  }
+
+  .cart-modal-icon-svg {
+    width: 64px;
+    height: 64px;
   }
 
   .cart-modal-title {
     font-size: var(--font-size-lg);
-    margin-bottom: 1.5rem;
+    margin: 0.5rem 0 1rem 0;
+  }
+
+  .cart-modal-actions {
+    margin-top: 1rem;
+    gap: 0.2rem;
   }
 }

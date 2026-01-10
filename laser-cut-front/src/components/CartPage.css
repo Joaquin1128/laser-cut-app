@@ -43,10 +43,6 @@
   font-family: var(--font-family-buttons);
 }
 
-.cart-empty .btn-primary:hover:not(:disabled) {
-  box-shadow: var(--shadow-primary-sm);
-}
-
 .cart-empty .btn-primary:disabled {
   background: var(--color-disabled-bg);
   color: var(--color-disabled-text);

@@ -53,7 +53,7 @@ public class DxfParser {
         }
 
         if (totalArcosAbiertos > 0) {
-            String mensaje = "El archivo DXF contiene arcos abiertos. Todos los arcos deben estar cerrados (360°).";
+            String mensaje = "El archivo contiene arcos abiertos. Todos los arcos deben estar cerrados (360°).";
             logger.error("Archivo DXF rechazado: {} arco(s) no cerrado(s) detectado(s)", totalArcosAbiertos);
             throw new BadRequestException(mensaje);
         }

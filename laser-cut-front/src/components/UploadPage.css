@@ -153,7 +153,6 @@
 
 .btn-browse-files:hover:not(:disabled) {
   background: var(--color-primary-dark);
-  box-shadow: var(--shadow-primary-sm);
 }
 
 .btn-browse-files:disabled {
