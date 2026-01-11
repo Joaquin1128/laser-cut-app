@@ -3,6 +3,7 @@ package com.example.lasercut.laser_cut_back.dto;
 import java.util.List;
 
 public class EspesorDTO {
+    
     private Long id;
     private Double espesorMm;
     private Double espesorInch;

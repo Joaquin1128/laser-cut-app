@@ -2,21 +2,22 @@ package com.example.lasercut.laser_cut_back.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.example.lasercut.laser_cut_back.model.Pedido;
 
 /**
  * DTO para respuesta de pedido
+ * Incluye la lista de items del pedido
  */
 public class PedidoResponse {
+    
     private Long id;
     private LocalDateTime createdAt;
     private String status;
-    private String material;
-    private Double thickness;
-    private Integer quantity;
     private BigDecimal totalPrice;
-    private String metadata;
+    private List<PedidoItemResponse> items;
     private String paymentStatus; // Estado del pago de Mercado Pago
 
     public PedidoResponse() {
@@ -26,11 +27,10 @@ public class PedidoResponse {
         this.id = pedido.getId();
         this.createdAt = pedido.getCreatedAt();
         this.status = pedido.getStatus().name();
-        this.material = pedido.getMaterial();
-        this.thickness = pedido.getThickness();
-        this.quantity = pedido.getQuantity();
         this.totalPrice = pedido.getTotalPrice();
-        this.metadata = pedido.getMetadata();
+        this.items = pedido.getItems().stream()
+                .map(PedidoItemResponse::new)
+                .collect(Collectors.toList());
         if (pedido.getPaymentStatus() != null) {
             this.paymentStatus = pedido.getPaymentStatus().name();
         }
@@ -60,30 +60,6 @@ public class PedidoResponse {
         this.status = status;
     }
 
-    public String getMaterial() {
-        return material;
-    }
-
-    public void setMaterial(String material) {
-        this.material = material;
-    }
-
-    public Double getThickness() {
-        return thickness;
-    }
-
-    public void setThickness(Double thickness) {
-        this.thickness = thickness;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
     public BigDecimal getTotalPrice() {
         return totalPrice;
     }
@@ -92,12 +68,12 @@ public class PedidoResponse {
         this.totalPrice = totalPrice;
     }
 
-    public String getMetadata() {
-        return metadata;
+    public List<PedidoItemResponse> getItems() {
+        return items;
     }
 
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
+    public void setItems(List<PedidoItemResponse> items) {
+        this.items = items;
     }
     
     public String getPaymentStatus() {

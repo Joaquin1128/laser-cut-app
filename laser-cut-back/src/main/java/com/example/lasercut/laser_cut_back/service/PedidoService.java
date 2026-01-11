@@ -1,18 +1,21 @@
 package com.example.lasercut.laser_cut_back.service;
 
-import com.example.lasercut.laser_cut_back.dto.CreatePedidoRequest;
-import com.example.lasercut.laser_cut_back.dto.PedidoResponse;
-import com.example.lasercut.laser_cut_back.exception.BadRequestException;
-import com.example.lasercut.laser_cut_back.model.AppUser;
-import com.example.lasercut.laser_cut_back.model.Pedido;
-import com.example.lasercut.laser_cut_back.repository.PedidoRepository;
-import com.example.lasercut.laser_cut_back.repository.UserRepository;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.example.lasercut.laser_cut_back.dto.CreatePedidoRequest;
+import com.example.lasercut.laser_cut_back.dto.PedidoItemRequest;
+import com.example.lasercut.laser_cut_back.dto.PedidoResponse;
+import com.example.lasercut.laser_cut_back.exception.BadRequestException;
+import com.example.lasercut.laser_cut_back.model.AppUser;
+import com.example.lasercut.laser_cut_back.model.Pedido;
+import com.example.lasercut.laser_cut_back.model.PedidoItem;
+import com.example.lasercut.laser_cut_back.repository.PedidoRepository;
+import com.example.lasercut.laser_cut_back.repository.UserRepository;
 
 /**
  * Servicio de pedidos
@@ -37,18 +40,33 @@ public class PedidoService {
         AppUser usuario = userRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException("Usuario no encontrado"));
 
-        Pedido pedido = new Pedido(
-                usuario,
-                request.getMaterial(),
-                request.getThickness(),
-                request.getQuantity(),
-                request.getTotalPrice()
-        );
-
-        if (request.getMetadata() != null) {
-            pedido.setMetadata(request.getMetadata());
+        // Validar que el pedido tenga items
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new BadRequestException("El pedido debe contener al menos un item");
         }
 
+        // Crear el pedido con el precio total
+        Pedido pedido = new Pedido(usuario, request.getTotalPrice());
+
+        // Crear y agregar cada item al pedido
+        for (PedidoItemRequest itemRequest : request.getItems()) {
+            PedidoItem item = new PedidoItem(
+                    pedido,
+                    itemRequest.getMaterial(),
+                    itemRequest.getThickness(),
+                    itemRequest.getQuantity(),
+                    itemRequest.getUnitPrice(),
+                    itemRequest.getTotalPrice()
+            );
+
+            if (itemRequest.getMetadata() != null) {
+                item.setMetadata(itemRequest.getMetadata());
+            }
+
+            pedido.addItem(item);
+        }
+
+        // Guardar el pedido (los items se guardarán en cascada)
         pedido = pedidoRepository.save(pedido);
 
         // TODO: INTEGRACIÓN MERCADO PAGO

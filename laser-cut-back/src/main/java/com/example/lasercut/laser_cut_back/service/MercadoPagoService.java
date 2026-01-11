@@ -1,20 +1,22 @@
 package com.example.lasercut.laser_cut_back.service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.example.lasercut.laser_cut_back.dto.PreferenceResponse;
 import com.example.lasercut.laser_cut_back.exception.BadRequestException;
 import com.example.lasercut.laser_cut_back.model.Pedido;
+import com.example.lasercut.laser_cut_back.model.PedidoItem;
 import com.google.gson.Gson;
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.preference.PreferenceClient;
 import com.mercadopago.client.preference.PreferenceItemRequest;
 import com.mercadopago.client.preference.PreferenceRequest;
 import com.mercadopago.resources.preference.Preference;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Servicio de integración con Mercado Pago
@@ -39,6 +41,7 @@ public class MercadoPagoService {
 
     /**
      * Crea una preferencia de pago en Mercado Pago para un pedido
+     * Cada item del pedido se convierte en un item de la preferencia de Mercado Pago
      * 
      * @param pedido El pedido para el cual crear la preferencia
      * @param backUrls URLs de retorno después del pago
@@ -48,55 +51,61 @@ public class MercadoPagoService {
         try {
             PreferenceClient client = new PreferenceClient();
 
-            // Validar que el precio sea válido
+            // Validar que el pedido tenga items
+            if (pedido.getItems() == null || pedido.getItems().isEmpty()) {
+                throw new BadRequestException("El pedido debe contener al menos un item");
+            }
+
+            // Validar que el precio total sea válido
             if (pedido.getTotalPrice() == null || pedido.getTotalPrice().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new BadRequestException("El precio total del pedido debe ser mayor a cero");
             }
 
-            if (pedido.getQuantity() == null || pedido.getQuantity() <= 0) {
-                throw new BadRequestException("La cantidad debe ser mayor a cero");
-            }
-
-            // Calcular precio unitario
-            BigDecimal unitPrice = pedido.getTotalPrice().divide(
-                BigDecimal.valueOf(pedido.getQuantity()), 
-                2, 
-                java.math.RoundingMode.HALF_UP
-            );
-
-            // Validar que el precio unitario sea válido para MP (mínimo 0.01)
-            if (unitPrice.compareTo(new BigDecimal("0.01")) < 0) {
-                throw new BadRequestException("El precio unitario debe ser al menos $0.01");
-            }
-
-            // Limitar longitud de título y descripción (MP tiene límites)
-            String title = "Pedido #" + pedido.getId() + " - " + pedido.getMaterial();
-            if (title.length() > 127) {
-                title = title.substring(0, 124) + "...";
-            }
-            
-            String description = "Corte láser: " + pedido.getMaterial() + " (" + pedido.getThickness() + "mm) - " + pedido.getQuantity() + " piezas";
-            if (description.length() > 127) {
-                description = description.substring(0, 124) + "...";
-            }
-
-            // Crear items de la preferencia
+            // Crear items de la preferencia (uno por cada item del pedido)
             List<PreferenceItemRequest> items = new ArrayList<>();
             
-            PreferenceItemRequest item = PreferenceItemRequest.builder()
-                    .title(title)
-                    .description(description)
-                    .quantity(pedido.getQuantity())
-                    .unitPrice(unitPrice)
-                    .currencyId("ARS")
-                    .build();
+            for (PedidoItem pedidoItem : pedido.getItems()) {
+                // Validar precio unitario mínimo para MP
+                if (pedidoItem.getUnitPrice() == null || pedidoItem.getUnitPrice().compareTo(new BigDecimal("0.01")) < 0) {
+                    throw new BadRequestException("El precio unitario del item debe ser al menos $0.01");
+                }
+
+                if (pedidoItem.getQuantity() == null || pedidoItem.getQuantity() <= 0) {
+                    throw new BadRequestException("La cantidad del item debe ser mayor a cero");
+                }
+
+                // Limitar longitud de título y descripción (MP tiene límites de 127 caracteres)
+                String title = "Pedido #" + pedido.getId() + " - " + pedidoItem.getMaterial();
+                if (title.length() > 127) {
+                    title = title.substring(0, 124) + "...";
+                }
+                
+                String description = "Corte láser: " + pedidoItem.getMaterial() + 
+                                   " (" + pedidoItem.getThickness() + "mm) - " + 
+                                   pedidoItem.getQuantity() + " piezas";
+                if (description.length() > 127) {
+                    description = description.substring(0, 124) + "...";
+                }
+
+                PreferenceItemRequest item = PreferenceItemRequest.builder()
+                        .title(title)
+                        .description(description)
+                        .quantity(pedidoItem.getQuantity())
+                        .unitPrice(pedidoItem.getUnitPrice())
+                        .currencyId("ARS")
+                        .build();
+                
+                items.add(item);
+                
+                System.out.println("Item MP - Material: " + pedidoItem.getMaterial() + 
+                                 ", UnitPrice: " + pedidoItem.getUnitPrice() + 
+                                 ", Quantity: " + pedidoItem.getQuantity() + 
+                                 ", TotalPrice: " + pedidoItem.getTotalPrice());
+            }
             
             System.out.println("Creando preferencia MP - Pedido ID: " + pedido.getId() + 
-                             ", UnitPrice: " + unitPrice + 
-                             ", Quantity: " + pedido.getQuantity() + 
+                             ", Items: " + items.size() + 
                              ", TotalPrice: " + pedido.getTotalPrice());
-            
-            items.add(item);
 
             // Validar que las URLs no sean nulas o vacías
             if (successUrl == null || successUrl.trim().isEmpty()) {

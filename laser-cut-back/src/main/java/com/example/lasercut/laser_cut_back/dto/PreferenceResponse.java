@@ -4,6 +4,7 @@ package com.example.lasercut.laser_cut_back.dto;
  * DTO para respuesta de preferencia de Mercado Pago
  */
 public class PreferenceResponse {
+    
     private String id;
     private String initPoint;
     private String sandboxInitPoint;

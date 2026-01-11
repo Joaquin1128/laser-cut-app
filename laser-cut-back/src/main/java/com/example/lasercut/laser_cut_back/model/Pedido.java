@@ -1,19 +1,24 @@
 package com.example.lasercut.laser_cut_back.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.*;
 
 /**
  * Entidad Pedido
+ * Representa UNA compra completa con múltiples items.
  * 
- * PREPARACIÓN INTEGRACIÓN MERCADO PAGO:
- * - Se agregará campo: private String mercadoPagoPreferenceId;
- * - Se agregará campo: private String mercadoPagoPaymentId;
- * - Se agregará enum PaymentStatus: PENDING, APPROVED, REJECTED, CANCELLED
- * - Se agregará campo: private PaymentStatus paymentStatus;
+ * Un pedido contiene:
+ * - Información del usuario
+ * - Fecha de creación
+ * - Estado del pedido
+ * - Precio total (suma de todos los items)
+ * - Lista de items (PedidoItem) - cada item es una pieza/producto
  * 
- * Cuando se integre MP:
+ * INTEGRACIÓN MERCADO PAGO:
  * - Al crear preferencia de pago, guardar preferenceId
  * - Al recibir webhook de MP, actualizar paymentStatus y paymentId
  * - Vincular paymentStatus con orderStatus
@@ -37,20 +42,11 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    @Column(nullable = false)
-    private String material;
-
-    @Column(nullable = false)
-    private Double thickness;
-
-    @Column(nullable = false)
-    private Integer quantity;
-
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalPrice;
+    private BigDecimal totalPrice; // Suma de todos los items del pedido
 
-    @Column(columnDefinition = "TEXT")
-    private String metadata; // JSON string para información adicional del corte
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PedidoItem> items = new ArrayList<>();
 
     // Campos de Mercado Pago
     @Column(name = "mp_preference_id")
@@ -66,14 +62,12 @@ public class Pedido {
     public Pedido() {
     }
 
-    public Pedido(AppUser usuario, String material, Double thickness, Integer quantity, BigDecimal totalPrice) {
+    public Pedido(AppUser usuario, BigDecimal totalPrice) {
         this.usuario = usuario;
-        this.material = material;
-        this.thickness = thickness;
-        this.quantity = quantity;
         this.totalPrice = totalPrice;
         this.status = OrderStatus.PENDIENTE;
         this.createdAt = LocalDateTime.now();
+        this.items = new ArrayList<>();
     }
 
     @PrePersist
@@ -115,30 +109,6 @@ public class Pedido {
         this.status = status;
     }
 
-    public String getMaterial() {
-        return material;
-    }
-
-    public void setMaterial(String material) {
-        this.material = material;
-    }
-
-    public Double getThickness() {
-        return thickness;
-    }
-
-    public void setThickness(Double thickness) {
-        this.thickness = thickness;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
     public BigDecimal getTotalPrice() {
         return totalPrice;
     }
@@ -147,12 +117,22 @@ public class Pedido {
         this.totalPrice = totalPrice;
     }
 
-    public String getMetadata() {
-        return metadata;
+    public List<PedidoItem> getItems() {
+        return items;
     }
 
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
+    public void setItems(List<PedidoItem> items) {
+        this.items = items;
+    }
+
+    public void addItem(PedidoItem item) {
+        this.items.add(item);
+        item.setPedido(this);
+    }
+
+    public void removeItem(PedidoItem item) {
+        this.items.remove(item);
+        item.setPedido(null);
     }
 
     public String getMercadoPagoPreferenceId() {

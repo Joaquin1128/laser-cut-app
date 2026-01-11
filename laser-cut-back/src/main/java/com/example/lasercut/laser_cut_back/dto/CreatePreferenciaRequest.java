@@ -4,6 +4,7 @@ package com.example.lasercut.laser_cut_back.dto;
  * DTO para crear preferencia de pago
  */
 public class CreatePreferenciaRequest {
+    
     private Long pedidoId;
     private String successUrl;
     private String failureUrl;
