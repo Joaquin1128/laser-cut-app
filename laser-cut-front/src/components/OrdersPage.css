@@ -205,6 +205,11 @@
   color: var(--color-primary);
 }
 
+.highlight {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
 @media (max-width: 1024px) {
   .order-item {
     grid-template-columns: 1fr;

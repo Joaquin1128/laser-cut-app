@@ -6,6 +6,7 @@ import { ordersService } from '../services/ordersService';
 import Header from './Header';
 import { FaTrash } from 'react-icons/fa';
 import AuthModal from './AuthModal';
+import ProcessingModal from './ProcessingModal';
 import './CartPage.css';
 import './QuotePage.css';
 import './Wizard.css';
@@ -13,10 +14,11 @@ import './Step.css';
 
 function CartPage() {
   const navigate = useNavigate();
-  const { cartItems, removeFromCart, clearCart, getCartTotal } = useCart();
+  const { cartItems, removeFromCart, getCartTotal } = useCart();
   const { isAuthenticated } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [paymentProgress, setPaymentProgress] = useState(0);
   const total = getCartTotal();
 
   const handleContinueShopping = () => {
@@ -24,72 +26,89 @@ function CartPage() {
   };
 
   const handleProceedToPayment = async () => {
-    // Si no está autenticado, mostrar modal de login
     if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
 
     setIsCreatingOrder(true);
+    setPaymentProgress(0);
+
+    let progressInterval = null;
+
     try {
-      // 1. Crear pedidos primero (uno por cada item del carrito)
-      const pedidosCreados = await Promise.all(
-        cartItems.map(async (item) => {
-          const pedidoData = {
-            material: item.material?.nombre || 'Desconocido',
-            thickness: item.material?.espesor || 0,
-            quantity: item.cantidad || 1,
-            totalPrice: item.precioTotal || 0,
-            metadata: JSON.stringify({
-              archivoNombre: item.archivo?.nombre,
-              dimensiones: item.archivo?.dimensiones,
-              terminacion: item.terminacion,
-            }),
-          };
-          return ordersService.crearPedido(pedidoData);
-        })
-      );
+      progressInterval = setInterval(() => {
+        setPaymentProgress((prev) => {
+          if (prev >= 90) {
+            return prev;
+          }
+          const increment = Math.max(0.5, (90 - prev) * 0.02);
+          return Math.min(prev + increment, 90);
+        });
+      }, 100);
 
-      // 2. Consolidar todos los pedidos en una sola preferencia
-      // Crear una preferencia con todos los items del carrito
-      if (pedidosCreados.length > 0) {
-        // Usar el primer pedido como referencia, pero crear preferencia con el total
-        const totalPedidos = pedidosCreados.reduce((sum, p) => sum + parseFloat(p.totalPrice), 0);
-        const primerPedido = pedidosCreados[0];
-        
-        // URLs de retorno
-        const baseUrl = window.location.origin;
-        const urls = {
-          successUrl: `${baseUrl}/payment/success?status=approved`,
-          failureUrl: `${baseUrl}/payment/failure?status=rejected`,
-          pendingUrl: `${baseUrl}/payment/pending?status=pending`,
-        };
+      setPaymentProgress(10);
+      const itemsPedido = cartItems.map((item) => ({
+        material: item.material?.nombre || 'Desconocido',
+        thickness: item.material?.espesor || 0,
+        quantity: item.cantidad || 1,
+        unitPrice: item.precioUnitario || 0,
+        totalPrice: item.precioTotal || 0,
+        metadata: JSON.stringify({
+          archivoNombre: item.archivo?.nombre,
+          dimensiones: item.archivo?.dimensiones,
+          terminacion: item.terminacion,
+          urlPreview: item.archivo?.urlPreview,
+        }),
+      }));
 
-        // Crear preferencia de pago solo para el primer pedido
-        // TODO: En el futuro, crear una preferencia consolidada con todos los items
-        const preference = await ordersService.crearPreferenciaPago(primerPedido.id, urls);
-        
-        // Limpiar carrito antes de redirigir
-        clearCart();
-        
-        // Redirigir al checkout de Mercado Pago
-        // Usar sandboxInitPoint en desarrollo, initPoint en producción
-        const checkoutUrl = preference.sandboxInitPoint || preference.initPoint;
-        if (checkoutUrl) {
-          window.location.href = checkoutUrl;
-        } else {
-          throw new Error('No se pudo obtener la URL de checkout');
-        }
+      const pedidoData = {
+        totalPrice: total,
+        items: itemsPedido,
+      };
+
+      setPaymentProgress(40);
+      const pedidoCreado = await ordersService.crearPedido(pedidoData);
+
+      setPaymentProgress(70);
+      const baseUrl = window.location.origin;
+      const urls = {
+        successUrl: `${baseUrl}/payment/success?status=approved`,
+        failureUrl: `${baseUrl}/payment/failure?status=rejected`,
+        pendingUrl: `${baseUrl}/payment/pending?status=pending`,
+      };
+
+      const preference = await ordersService.crearPreferenciaPago(pedidoCreado.id, urls);
+      
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      
+      setPaymentProgress(100);
+      
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const checkoutUrl = preference.sandboxInitPoint || preference.initPoint;
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error('No se pudo obtener la URL de checkout');
       }
       
     } catch (error) {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
       console.error('Error al procesar el pago:', error);
-      alert('Error al procesar el pago. Por favor, intentá nuevamente.');
       setIsCreatingOrder(false);
+      setPaymentProgress(0);
+      alert('Error al procesar el pago. Por favor, intentá nuevamente.');
     }
   };
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !isCreatingOrder) {
     return (
       <div className="cart-page">
         <Header />
@@ -120,7 +139,7 @@ function CartPage() {
             <p className="step-description">Revisá los items agregados a tu carrito.</p>
           
           <div className="cart-items">
-            {cartItems.map((item) => (
+            {cartItems.length > 0 ? cartItems.map((item) => (
               <div key={item.id} className="cart-item">
                 <div className="cart-item-preview">
                   {item.archivo?.urlPreview && (
@@ -182,39 +201,55 @@ function CartPage() {
                   <FaTrash />
                 </button>
               </div>
-            ))}
+            )) : (
+              !isCreatingOrder && (
+                <p className="cart-empty-message">No hay items en el carrito.</p>
+              )
+            )}
           </div>
 
-          <div className="cart-summary">
-            <div className="cart-summary-row">
-              <span className="cart-summary-label">Total general:</span>
-              <span className="cart-summary-total">${total.toFixed(2)}</span>
-            </div>
-          </div>
+          {cartItems.length > 0 && (
+            <>
+              <div className="cart-summary">
+                <div className="cart-summary-row">
+                  <span className="cart-summary-label">Total general:</span>
+                  <span className="cart-summary-total">${total.toFixed(2)}</span>
+                </div>
+              </div>
 
-          <div className="quote-actions">
-            <button
-              className="btn-secondary"
-              type="button"
-              onClick={handleContinueShopping}
-            >
-              SEGUIR COTIZANDO
-            </button>
-            <button
-              className="btn-primary"
-              type="button"
-              onClick={handleProceedToPayment}
-              disabled={isCreatingOrder}
-            >
-              {isCreatingOrder ? 'PROCESANDO...' : 'PROCEDER AL PAGO'}
-            </button>
-          </div>
+              <div className="quote-actions">
+                <button
+                  className="btn-secondary"
+                  type="button"
+                  onClick={handleContinueShopping}
+                >
+                  SEGUIR COTIZANDO
+                </button>
+                <button
+                  className="btn-primary"
+                  type="button"
+                  onClick={handleProceedToPayment}
+                  disabled={isCreatingOrder}
+                >
+                  {isCreatingOrder ? 'PROCESANDO...' : 'PROCEDER AL PAGO'}
+                </button>
+              </div>
+            </>
+          )}
           </div>
         </div>
       </div>
 
       {showAuthModal && (
         <AuthModal onClose={() => setShowAuthModal(false)} />
+      )}
+
+      {isCreatingOrder && (
+        <ProcessingModal
+          progress={paymentProgress}
+          title="Preparando tu pago..."
+          message="Estamos procesando tu pedido y preparando la redirección a Mercado Pago. Por favor esperá unos segundos."
+        />
       )}
     </div>
   );

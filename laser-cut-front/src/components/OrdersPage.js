@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { ordersService } from '../services/ordersService';
 import Header from './Header';
 import AuthModal from './AuthModal';
+import OrderDetailModal from './OrderDetailModal';
 import './OrdersPage.css';
 import './QuotePage.css';
 import './Wizard.css';
@@ -24,6 +25,8 @@ function OrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [selectedPedido, setSelectedPedido] = useState(null);
+  const [showOrderDetail, setShowOrderDetail] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -79,6 +82,16 @@ function OrdersPage() {
 
   const handleContinueShopping = () => {
     navigate('/');
+  };
+
+  const handleShowOrderDetail = (pedido) => {
+    setSelectedPedido(pedido);
+    setShowOrderDetail(true);
+  };
+
+  const handleCloseOrderDetail = () => {
+    setShowOrderDetail(false);
+    setSelectedPedido(null);
   };
 
   if (!isAuthenticated) {
@@ -163,7 +176,7 @@ function OrdersPage() {
           
             <div className="orders-list">
               {pedidos.map((pedido) => (
-                <div key={pedido.id} className="order-item">
+                <div key={pedido.id} className="order-item" onClick={() => handleShowOrderDetail(pedido)} style={{ cursor: 'pointer' }}>
                   <div className="order-item-header">
                     <div className="order-item-id">
                       Pedido #{pedido.id}
@@ -177,22 +190,17 @@ function OrdersPage() {
                   </div>
                   <div className="order-item-details">
                     <div className="order-item-info-row">
-                      <span className="order-detail-label">Material:</span>
-                      <span className="order-detail-value">{pedido.material}</span>
+                      <span className="order-detail-label">Items:</span>
+                      <span className="order-detail-value">{pedido.items?.length || 0} {pedido.items?.length === 1 ? 'pieza' : 'piezas'}</span>
                     </div>
                     <div className="order-item-info-row">
-                      <span className="order-detail-label">Espesor:</span>
-                      <span className="order-detail-value">{pedido.thickness} mm</span>
-                    </div>
-                    <div className="order-item-info-row">
-                      <span className="order-detail-label">Cantidad:</span>
-                      <span className="order-detail-value">{pedido.quantity} piezas</span>
+                      <span className="order-detail-label">Total:</span>
+                      <span className="order-detail-value highlight">{formatearPrecio(pedido.totalPrice)}</span>
                     </div>
                   </div>
                   <div className="order-item-pricing">
                     <div className="order-item-price-row cart-item-total-row">
-                      <span className="order-detail-label">Total:</span>
-                      <span className="order-item-total">{formatearPrecio(pedido.totalPrice)}</span>
+                      <span className="order-detail-label">Ver detalle →</span>
                     </div>
                   </div>
                 </div>
@@ -211,6 +219,13 @@ function OrdersPage() {
           </div>
         </div>
       </div>
+
+      {showOrderDetail && selectedPedido && (
+        <OrderDetailModal
+          pedido={selectedPedido}
+          onClose={handleCloseOrderDetail}
+        />
+      )}
     </div>
   );
 }
