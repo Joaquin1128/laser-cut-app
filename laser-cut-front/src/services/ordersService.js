@@ -104,4 +104,172 @@ export const ordersService = {
       throw error;
     }
   },
+
+  // ========== MÉTODOS DE CHECKOUT ==========
+
+  /**
+   * Iniciar checkout - crea un pedido en estado PENDING_CHECKOUT
+   */
+  async iniciarCheckout(pedidoData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/checkout/start`, {
+        method: 'POST',
+        headers: authService.getAuthHeaders(),
+        body: JSON.stringify(pedidoData),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          authService.removeToken();
+          throw new Error('Sesión expirada');
+        }
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al iniciar checkout:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualizar datos de facturación del pedido
+   */
+  async actualizarFacturacion(pedidoId, billingData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/checkout/${pedidoId}/billing`, {
+        method: 'PUT',
+        headers: authService.getAuthHeaders(),
+        body: JSON.stringify(billingData),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          authService.removeToken();
+          throw new Error('Sesión expirada');
+        }
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al actualizar facturación:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualizar datos de envío del pedido
+   */
+  async actualizarEnvio(pedidoId, shippingData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/checkout/${pedidoId}/shipping`, {
+        method: 'PUT',
+        headers: authService.getAuthHeaders(),
+        body: JSON.stringify(shippingData),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          authService.removeToken();
+          throw new Error('Sesión expirada');
+        }
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al actualizar envío:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Calcular costo de envío (cotización)
+   */
+  async calcularEnvio(quoteRequest) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/checkout/calculate-shipping`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authService.getAuthHeaders(),
+        },
+        body: JSON.stringify(quoteRequest),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al calcular envío:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualizar costo de envío del pedido
+   */
+  async actualizarCostoEnvio(pedidoId, shippingCost) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/checkout/${pedidoId}/shipping-cost`, {
+        method: 'PUT',
+        headers: authService.getAuthHeaders(),
+        body: JSON.stringify({ shippingCost }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          authService.removeToken();
+          throw new Error('Sesión expirada');
+        }
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al actualizar costo de envío:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Preparar para pago - cambia estado a PENDING_PAYMENT
+   */
+  async prepararPago(pedidoId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/checkout/${pedidoId}/prepare-payment`, {
+        method: 'POST',
+        headers: authService.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          authService.removeToken();
+          throw new Error('Sesión expirada');
+        }
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al preparar pago:', error);
+      throw error;
+    }
+  },
 };

@@ -11,18 +11,25 @@
   z-index: 1000;
   box-shadow: none;
   border-bottom: none;
+  min-height: 70px;
+  height: 70px;
+  overflow: visible;
 }
 
 .header-logo {
   display: flex;
   align-items: center;
   user-select: none;
+  height: 100%;
+  overflow: visible;
+  position: relative;
 }
 
 .header-logo-img {
   height: 40px;
   width: auto;
   object-fit: contain;
+  max-height: 40px;
 }
 
 .header-content {
@@ -118,7 +125,7 @@
   }
 
   .header-logo-img {
-    height: 32px;
+    height: 100px;
   }
 
   .header-content {

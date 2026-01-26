@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaShoppingCart } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import logoG2 from '../assets/icons/logo_g2.png';
+import logoGedos from '../assets/icons/logo_gedos.png';
 import AuthModal from './AuthModal';
 import './Header.css';
 
@@ -42,8 +42,8 @@ function Header({ children }) {
         style={{ cursor: 'pointer' }}
       >
         <img
-          src={logoG2}
-          alt="Logo G2"
+          src={logoGedos}
+          alt="Logo Gedos"
           className="header-logo-img"
         />
       </div>
