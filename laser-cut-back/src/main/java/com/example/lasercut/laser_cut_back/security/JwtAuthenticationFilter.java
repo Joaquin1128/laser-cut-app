@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.lasercut.laser_cut_back.service.JwtService;
+import com.example.lasercut.laser_cut_back.shared.service.JwtService;
 
 /**
  * Filtro JWT para validar tokens en cada request

@@ -1,7 +1,7 @@
 package com.example.lasercut.laser_cut_back.security;
 
-import com.example.lasercut.laser_cut_back.model.AppUser;
-import com.example.lasercut.laser_cut_back.repository.UserRepository;
+import com.example.lasercut.laser_cut_back.domain.auth.model.AppUser;
+import com.example.lasercut.laser_cut_back.domain.auth.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
