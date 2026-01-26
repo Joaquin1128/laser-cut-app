@@ -1,0 +1,508 @@
+/* Estilos compartidos para los pasos del checkout */
+
+.required {
+  color: #dc3545;
+  margin-left: 0.25rem;
+}
+
+/* Secciones del checkout */
+.checkout-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-border-strong, #e2e8f0);
+}
+
+.checkout-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.checkout-section-title {
+  font-size: var(--font-size-xl, 1.25rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-heading, #2d3748);
+  margin: 0 0 1.5rem 0;
+}
+
+/* Inputs estilo login */
+.checkout-step .auth-form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 4px;
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-base);
+  transition: border-color 0.2s ease;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.checkout-step .auth-form-input::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+.checkout-step .auth-form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(74, 100, 40, 0.1);
+}
+
+.checkout-step .auth-form-input:focus::placeholder {
+  color: #ccc;
+}
+
+.checkout-step select.auth-form-input {
+  cursor: pointer;
+}
+
+.checkout-step select.auth-form-input option {
+  color: var(--color-text);
+}
+
+/* Layout de dos columnas para facturación y envío */
+.billing-shipping-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.billing-shipping-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+}
+
+/* Para SummaryStep, ajustar el scroll */
+.checkout-step .billing-shipping-form {
+  max-height: calc(100vh - 280px);
+}
+
+.billing-shipping-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.billing-shipping-form::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.billing-shipping-form::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong, #e2e8f0);
+  border-radius: 3px;
+}
+
+.billing-shipping-form::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted, #718096);
+}
+
+.billing-shipping-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: sticky;
+  top: 0;
+  align-self: start;
+}
+
+/* Sección de cálculo de envío */
+.shipping-calc-section {
+  background: var(--color-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border-strong, #e2e8f0);
+}
+
+.shipping-calc-input-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.shipping-calc-input-group .auth-form-input {
+  flex: 0 0 120px; /* Ancho fijo para el código postal */
+  height: auto;
+  min-height: 42px; /* Misma altura que el botón */
+  box-sizing: border-box;
+}
+
+.shipping-calc-input-group .btn-primary {
+  white-space: nowrap;
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-sm, 0.9rem);
+  height: auto;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shipping-quote-result {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border-strong, #e2e8f0);
+}
+
+.shipping-quote-result .shipping-quote-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: var(--font-size-sm, 0.9rem);
+}
+
+.shipping-quote-result .shipping-cost {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Subtotal */
+.checkout-subtotal {
+  background: var(--color-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border-strong, #e2e8f0);
+}
+
+.subtotal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  font-size: var(--font-size-base);
+}
+
+.subtotal-row:not(.subtotal-total) {
+  border-bottom: 1px solid var(--color-border-strong, #e2e8f0);
+}
+
+/* Eliminar borde inferior de la fila que precede al total (Envío) */
+.subtotal-row:not(.subtotal-total) + .subtotal-row.subtotal-total {
+  border-top: 2px solid var(--color-border-strong, #e2e8f0);
+}
+
+/* Eliminar borde inferior de la fila que está justo antes de subtotal-total */
+.checkout-subtotal > .subtotal-row:not(.subtotal-total):nth-last-child(2) {
+  border-bottom: none;
+}
+
+.subtotal-total {
+  font-size: var(--font-size-lg, 1.1rem);
+  font-weight: var(--font-weight-semibold, 600);
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--color-border-strong, #e2e8f0);
+  border-bottom: none;
+}
+
+.subtotal-amount {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text);
+}
+
+.subtotal-total .subtotal-amount {
+  color: var(--color-primary);
+  font-size: var(--font-size-xl, 1.25rem);
+}
+
+@media (max-width: 1024px) {
+  .billing-shipping-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .billing-shipping-sidebar {
+    position: relative;
+    top: 0;
+  }
+}
+
+/* Form inputs y selects deben tener fondo blanco */
+.checkout-step .form-input,
+.checkout-step select.form-input {
+  background: var(--color-bg);
+}
+
+.checkout-step .form-section {
+  background: transparent;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Shipping Type Options */
+.shipping-type-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.shipping-type-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border: 2px solid var(--color-border-strong, #e2e8f0);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--color-bg);
+}
+
+.shipping-type-option:hover {
+  border-color: var(--color-text, #2d3748);
+  background: var(--color-surface-2, #f7fafc);
+}
+
+.shipping-type-option input[type="radio"] {
+  margin-right: 1rem;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.shipping-type-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.shipping-type-title {
+  font-weight: 600;
+  color: var(--color-text, #2d3748);
+  margin-bottom: 0.25rem;
+}
+
+.shipping-type-description {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #718096);
+}
+
+.shipping-type-option input[type="radio"]:checked + .shipping-type-content .shipping-type-title {
+  color: var(--color-primary, #667eea);
+}
+
+.shipping-type-option:has(input[type="radio"]:checked) {
+  border-color: var(--color-primary, #667eea);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+/* Shipping Quote */
+.shipping-quote {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-strong, #e2e8f0);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.shipping-quote-header h4 {
+  margin: 0 0 1rem 0;
+  color: var(--color-heading, #2d3748);
+  font-size: 1.125rem;
+}
+
+.shipping-quote-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.shipping-quote-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shipping-cost {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--color-primary, #667eea);
+}
+
+/* Info Box */
+.info-box {
+  background: var(--color-surface-2, #f7fafc);
+  border-left: 4px solid var(--color-primary, #667eea);
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+.info-box p {
+  margin: 0.5rem 0;
+  color: var(--color-text, #2d3748);
+  font-size: 0.875rem;
+}
+
+.info-box p:first-child {
+  margin-top: 0;
+}
+
+.info-box p:last-child {
+  margin-bottom: 0;
+}
+
+/* Summary Sections */
+.summary-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.summary-section {
+  border-bottom: 1px solid var(--color-border-strong, #e2e8f0);
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+/* Para el layout de dos columnas en SummaryStep */
+.billing-shipping-form .summary-section {
+  margin-bottom: 1.5rem;
+}
+
+.billing-shipping-form .summary-section:last-child {
+  margin-bottom: 0;
+}
+
+.summary-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-heading, #2d3748);
+  margin-bottom: 1rem;
+}
+
+.summary-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  background: var(--color-bg);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.summary-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.summary-item-name {
+  font-weight: 500;
+  color: var(--color-text, #2d3748);
+}
+
+.summary-item-details {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #718096);
+}
+
+.summary-item-price {
+  font-weight: 600;
+  color: var(--color-text, #2d3748);
+}
+
+.summary-data {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.summary-data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.5rem 0;
+}
+
+.summary-data-row span:first-child {
+  font-weight: 500;
+  color: var(--color-text-muted, #718096);
+}
+
+.summary-data-row span:last-child {
+  color: var(--color-text, #2d3748);
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+.summary-totals {
+  background: var(--color-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  font-size: 1rem;
+}
+
+.summary-total-row:not(.summary-total-final) {
+  border-bottom: 1px solid var(--color-border-strong, #e2e8f0);
+}
+
+.summary-total-final {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-heading, #2d3748);
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--color-border-strong, #e2e8f0);
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .summary-data-row {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .summary-data-row span:last-child {
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .summary-sections {
+    gap: 1.5rem;
+  }
+}

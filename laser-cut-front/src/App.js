@@ -3,13 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import './App.css';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
-import UploadPage from './components/UploadPage';
-import Wizard from './components/Wizard';
-import QuotePage from './components/QuotePage';
-import CartPage from './components/CartPage';
-import CheckoutPage from './components/CheckoutPage';
-import OrdersPage from './components/OrdersPage';
-import PaymentResultPage from './components/PaymentResultPage';
+import UploadPage from './features/upload/components/UploadPage';
+import Wizard from './features/quote/components/Wizard';
+import QuotePage from './features/quote/components/QuotePage';
+import CartPage from './features/cart/components/CartPage';
+import CheckoutPage from './features/checkout/components/CheckoutPage';
+import OrdersPage from './features/orders/components/OrdersPage';
+import PaymentResultPage from './features/payment/components/PaymentResultPage';
 
 function App() {
   return (
