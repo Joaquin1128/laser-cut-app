@@ -7,9 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
+import com.example.lasercut.laser_cut_back.dto.BillingDataRequest;
 import com.example.lasercut.laser_cut_back.dto.CreatePedidoRequest;
 import com.example.lasercut.laser_cut_back.dto.PedidoItemRequest;
 import com.example.lasercut.laser_cut_back.dto.PedidoResponse;
+import com.example.lasercut.laser_cut_back.dto.ShippingDataRequest;
 import com.example.lasercut.laser_cut_back.exception.BadRequestException;
 import com.example.lasercut.laser_cut_back.model.AppUser;
 import com.example.lasercut.laser_cut_back.model.Pedido;
@@ -125,12 +129,134 @@ public class PedidoService {
         
         // Actualizar estado del pedido según el pago
         if (status == Pedido.PaymentStatus.APPROVED) {
-            pedido.setStatus(Pedido.OrderStatus.EN_PROCESO);
+            // Si el pago es aprobado, marcar como PAID primero, luego puede pasar a EN_PROCESO
+            pedido.setStatus(Pedido.OrderStatus.PAID);
+            // También mantener EN_PROCESO para compatibilidad con flujos anteriores
+            // pedido.setStatus(Pedido.OrderStatus.EN_PROCESO);
         } else if (status == Pedido.PaymentStatus.REJECTED || status == Pedido.PaymentStatus.CANCELLED) {
             pedido.setStatus(Pedido.OrderStatus.CANCELADO);
         }
         
         pedidoRepository.save(pedido);
+    }
+
+    /**
+     * Actualiza los datos de facturación del pedido
+     */
+    @Transactional
+    public PedidoResponse actualizarFacturacion(Long pedidoId, Long userId, BillingDataRequest request) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+
+        // Validar que el pedido pertenezca al usuario
+        if (!pedido.getUsuario().getId().equals(userId)) {
+            throw new BadRequestException("No tienes permiso para acceder a este pedido");
+        }
+
+        // Validar que el pedido esté en un estado editable
+        if (pedido.getStatus() != Pedido.OrderStatus.PENDING_CHECKOUT && 
+            pedido.getStatus() != Pedido.OrderStatus.PENDING_PAYMENT) {
+            throw new BadRequestException("No se puede actualizar la facturación de un pedido en estado " + pedido.getStatus());
+        }
+
+        // Actualizar datos de facturación
+        pedido.setBillingName(request.getBillingName());
+        pedido.setBillingEmail(request.getBillingEmail());
+        pedido.setBillingType("C"); // Siempre tipo C
+        pedido.setFiscalId(request.getFiscalId()); // DNI
+        pedido.setBillingPhone(request.getBillingPhone()); // Teléfono
+
+        pedido = pedidoRepository.save(pedido);
+        return new PedidoResponse(pedido);
+    }
+
+    /**
+     * Actualiza los datos de envío del pedido
+     */
+    @Transactional
+    public PedidoResponse actualizarEnvio(Long pedidoId, Long userId, ShippingDataRequest request) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+
+        // Validar que el pedido pertenezca al usuario
+        if (!pedido.getUsuario().getId().equals(userId)) {
+            throw new BadRequestException("No tienes permiso para acceder a este pedido");
+        }
+
+        // Validar que el pedido esté en un estado editable
+        if (pedido.getStatus() != Pedido.OrderStatus.PENDING_CHECKOUT && 
+            pedido.getStatus() != Pedido.OrderStatus.PENDING_PAYMENT) {
+            throw new BadRequestException("No se puede actualizar el envío de un pedido en estado " + pedido.getStatus());
+        }
+
+        // Actualizar tipo de envío - siempre DELIVERY (no hay retiro en fábrica)
+        pedido.setShippingType(Pedido.ShippingType.DELIVERY);
+
+        // Envío a domicilio: requiere dirección
+        if (request.getStreet() == null || request.getStreet().isEmpty() ||
+            request.getCity() == null || request.getCity().isEmpty() ||
+            request.getPostalCode() == null || request.getPostalCode().isEmpty()) {
+            throw new BadRequestException("Se requiere dirección completa para el envío");
+        }
+
+        pedido.setShippingAddressStreet(request.getStreet());
+        pedido.setShippingAddressUnit(request.getUnit()); // Piso / Depto / Unidad (opcional)
+        pedido.setShippingAddressCity(request.getCity());
+        pedido.setShippingAddressPostalCode(request.getPostalCode());
+        pedido.setShippingAddressProvince(request.getProvince());
+        pedido.setShippingAddressCountry(request.getCountry() != null ? request.getCountry() : "Argentina");
+        // El costo de envío se calculará por separado
+
+        pedido = pedidoRepository.save(pedido);
+        return new PedidoResponse(pedido);
+    }
+
+    /**
+     * Actualiza el costo de envío del pedido
+     */
+    @Transactional
+    public PedidoResponse actualizarCostoEnvio(Long pedidoId, Long userId, BigDecimal shippingCost) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+
+        // Validar que el pedido pertenezca al usuario
+        if (!pedido.getUsuario().getId().equals(userId)) {
+            throw new BadRequestException("No tienes permiso para acceder a este pedido");
+        }
+
+        if (shippingCost == null) {
+            shippingCost = BigDecimal.ZERO;
+        }
+
+        pedido.setShippingCost(shippingCost);
+        pedido = pedidoRepository.save(pedido);
+        return new PedidoResponse(pedido);
+    }
+
+    /**
+     * Cambia el estado del pedido a PENDING_PAYMENT (listo para pagar)
+     */
+    @Transactional
+    public PedidoResponse prepararPago(Long pedidoId, Long userId) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+
+        // Validar que el pedido pertenezca al usuario
+        if (!pedido.getUsuario().getId().equals(userId)) {
+            throw new BadRequestException("No tienes permiso para acceder a este pedido");
+        }
+
+        // Validar que tenga facturación y envío completos
+        if (pedido.getBillingName() == null || pedido.getBillingEmail() == null) {
+            throw new BadRequestException("El pedido debe tener datos de facturación completos");
+        }
+
+        // Validar que tenga dirección completa (siempre es envío a domicilio)
+        if (pedido.getShippingAddressStreet() == null || pedido.getShippingAddressCity() == null) {
+            throw new BadRequestException("El pedido debe tener dirección completa");
+        }
+
+        // Cambiar estado a PENDING_PAYMENT
+        pedido.setStatus(Pedido.OrderStatus.PENDING_PAYMENT);
+        pedido = pedidoRepository.save(pedido);
+
+        return new PedidoResponse(pedido);
     }
 
     private Pedido.PaymentStatus mapearEstadoPago(String mpStatus) {

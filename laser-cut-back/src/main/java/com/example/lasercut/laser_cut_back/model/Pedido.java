@@ -59,15 +59,58 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
+    // Campos de facturación
+    @Column(name = "billing_name")
+    private String billingName; // Nombre o razón social
+
+    @Column(name = "billing_email")
+    private String billingEmail;
+
+    @Column(name = "billing_type")
+    private String billingType; // "A" (Factura A), "B" (Factura B), "C" (Factura C), "CONSUMIDOR_FINAL"
+
+    @Column(name = "fiscal_id")
+    private String fiscalId; // DNI (para Factura C)
+
+    @Column(name = "billing_phone")
+    private String billingPhone; // Teléfono de contacto
+
+    // Campos de envío
+    @Column(name = "shipping_type")
+    @Enumerated(EnumType.STRING)
+    private ShippingType shippingType; // PICKUP o DELIVERY
+
+    @Column(name = "shipping_cost", precision = 10, scale = 2)
+    private BigDecimal shippingCost = BigDecimal.ZERO;
+
+    @Column(name = "shipping_address_street")
+    private String shippingAddressStreet;
+
+    @Column(name = "shipping_address_unit")
+    private String shippingAddressUnit; // Piso / Depto / Unidad
+
+    @Column(name = "shipping_address_city")
+    private String shippingAddressCity;
+
+    @Column(name = "shipping_address_postal_code")
+    private String shippingAddressPostalCode;
+
+    @Column(name = "shipping_address_province")
+    private String shippingAddressProvince;
+
+    @Column(name = "shipping_address_country")
+    private String shippingAddressCountry;
+
     public Pedido() {
     }
 
     public Pedido(AppUser usuario, BigDecimal totalPrice) {
         this.usuario = usuario;
         this.totalPrice = totalPrice;
-        this.status = OrderStatus.PENDIENTE;
+        this.status = OrderStatus.PENDING_CHECKOUT; // Estado inicial: en proceso de checkout
         this.createdAt = LocalDateTime.now();
         this.items = new ArrayList<>();
+        this.shippingCost = BigDecimal.ZERO;
     }
 
     @PrePersist
@@ -160,8 +203,11 @@ public class Pedido {
     }
 
     public enum OrderStatus {
-        PENDIENTE,
+        PENDING_CHECKOUT,  // Pedido creado, en proceso de checkout
+        PENDING_PAYMENT,   // Checkout completo, esperando pago
+        PENDIENTE,         // Deprecado: usar PENDING_PAYMENT
         EN_PROCESO,
+        PAID,              // Pago aprobado (equivalente a EN_PROCESO después de pago)
         FINALIZADO,
         CANCELADO
     }
@@ -172,6 +218,124 @@ public class Pedido {
         REJECTED,
         CANCELLED,
         REFUNDED
+    }
+
+    public enum ShippingType {
+        PICKUP,    // Retiro en fábrica
+        DELIVERY   // Envío a domicilio
+    }
+
+    // Getters y Setters para facturación
+    public String getBillingName() {
+        return billingName;
+    }
+
+    public void setBillingName(String billingName) {
+        this.billingName = billingName;
+    }
+
+    public String getBillingEmail() {
+        return billingEmail;
+    }
+
+    public void setBillingEmail(String billingEmail) {
+        this.billingEmail = billingEmail;
+    }
+
+    public String getBillingType() {
+        return billingType;
+    }
+
+    public void setBillingType(String billingType) {
+        this.billingType = billingType;
+    }
+
+    public String getFiscalId() {
+        return fiscalId;
+    }
+
+    public void setFiscalId(String fiscalId) {
+        this.fiscalId = fiscalId;
+    }
+
+    public String getBillingPhone() {
+        return billingPhone;
+    }
+
+    public void setBillingPhone(String billingPhone) {
+        this.billingPhone = billingPhone;
+    }
+
+    // Getters y Setters para envío
+    public ShippingType getShippingType() {
+        return shippingType;
+    }
+
+    public void setShippingType(ShippingType shippingType) {
+        this.shippingType = shippingType;
+    }
+
+    public BigDecimal getShippingCost() {
+        return shippingCost != null ? shippingCost : BigDecimal.ZERO;
+    }
+
+    public void setShippingCost(BigDecimal shippingCost) {
+        this.shippingCost = shippingCost != null ? shippingCost : BigDecimal.ZERO;
+    }
+
+    public String getShippingAddressStreet() {
+        return shippingAddressStreet;
+    }
+
+    public void setShippingAddressStreet(String shippingAddressStreet) {
+        this.shippingAddressStreet = shippingAddressStreet;
+    }
+
+    public String getShippingAddressUnit() {
+        return shippingAddressUnit;
+    }
+
+    public void setShippingAddressUnit(String shippingAddressUnit) {
+        this.shippingAddressUnit = shippingAddressUnit;
+    }
+
+    public String getShippingAddressCity() {
+        return shippingAddressCity;
+    }
+
+    public void setShippingAddressCity(String shippingAddressCity) {
+        this.shippingAddressCity = shippingAddressCity;
+    }
+
+    public String getShippingAddressPostalCode() {
+        return shippingAddressPostalCode;
+    }
+
+    public void setShippingAddressPostalCode(String shippingAddressPostalCode) {
+        this.shippingAddressPostalCode = shippingAddressPostalCode;
+    }
+
+    public String getShippingAddressProvince() {
+        return shippingAddressProvince;
+    }
+
+    public void setShippingAddressProvince(String shippingAddressProvince) {
+        this.shippingAddressProvince = shippingAddressProvince;
+    }
+
+    public String getShippingAddressCountry() {
+        return shippingAddressCountry;
+    }
+
+    public void setShippingAddressCountry(String shippingAddressCountry) {
+        this.shippingAddressCountry = shippingAddressCountry;
+    }
+
+    /**
+     * Obtiene el precio total incluyendo envío
+     */
+    public BigDecimal getTotalWithShipping() {
+        return totalPrice.add(getShippingCost());
     }
     
 }

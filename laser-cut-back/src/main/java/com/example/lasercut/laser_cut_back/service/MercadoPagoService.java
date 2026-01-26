@@ -102,10 +102,27 @@ public class MercadoPagoService {
                                  ", Quantity: " + pedidoItem.getQuantity() + 
                                  ", TotalPrice: " + pedidoItem.getTotalPrice());
             }
+
+            // Agregar costo de envío como item adicional si existe y es mayor a 0
+            BigDecimal shippingCost = pedido.getShippingCost() != null ? pedido.getShippingCost() : BigDecimal.ZERO;
+            if (shippingCost.compareTo(BigDecimal.ZERO) > 0) {
+                PreferenceItemRequest shippingItem = PreferenceItemRequest.builder()
+                        .title("Envío - " + (pedido.getShippingType() == Pedido.ShippingType.PICKUP ? "Retiro en fábrica" : "Envío a domicilio"))
+                        .description("Costo de envío")
+                        .quantity(1)
+                        .unitPrice(shippingCost)
+                        .currencyId("ARS")
+                        .build();
+                items.add(shippingItem);
+                System.out.println("Item MP - Envío: " + shippingCost);
+            }
             
+            BigDecimal totalWithShipping = pedido.getTotalWithShipping();
             System.out.println("Creando preferencia MP - Pedido ID: " + pedido.getId() + 
                              ", Items: " + items.size() + 
-                             ", TotalPrice: " + pedido.getTotalPrice());
+                             ", TotalPrice: " + pedido.getTotalPrice() + 
+                             ", ShippingCost: " + shippingCost + 
+                             ", TotalWithShipping: " + totalWithShipping);
 
             // Validar que las URLs no sean nulas o vacías
             if (successUrl == null || successUrl.trim().isEmpty()) {

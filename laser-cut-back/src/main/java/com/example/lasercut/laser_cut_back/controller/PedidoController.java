@@ -1,5 +1,6 @@
 package com.example.lasercut.laser_cut_back.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -9,13 +10,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.lasercut.laser_cut_back.dto.BillingDataRequest;
 import com.example.lasercut.laser_cut_back.dto.CreatePedidoRequest;
 import com.example.lasercut.laser_cut_back.dto.PedidoResponse;
 import com.example.lasercut.laser_cut_back.dto.PreferenceResponse;
+import com.example.lasercut.laser_cut_back.dto.ShippingDataRequest;
+import com.example.lasercut.laser_cut_back.dto.ShippingQuoteRequest;
+import com.example.lasercut.laser_cut_back.dto.ShippingQuoteResponse;
 import com.example.lasercut.laser_cut_back.model.AppUser;
 import com.example.lasercut.laser_cut_back.repository.UserRepository;
 import com.example.lasercut.laser_cut_back.service.MercadoPagoService;
 import com.example.lasercut.laser_cut_back.service.PedidoService;
+import com.example.lasercut.laser_cut_back.service.ShippingService;
 
 /**
  * Controlador de pedidos
@@ -36,6 +42,9 @@ public class PedidoController {
 
     @Autowired
     private MercadoPagoService mercadoPagoService;
+
+    @Autowired
+    private ShippingService shippingService;
 
     @Autowired
     private UserRepository userRepository;
@@ -156,6 +165,112 @@ public class PedidoController {
             e.printStackTrace();
             return ResponseEntity.ok("OK");
         }
+    }
+
+    // ========== ENDPOINTS DE CHECKOUT ==========
+
+    /**
+     * Iniciar checkout - crea un pedido en estado PENDING_CHECKOUT
+     * Este endpoint crea el pedido ANTES del pago, permitiendo que el usuario
+     * complete facturación y envío antes de pagar.
+     */
+    @PostMapping("/checkout/start")
+    public ResponseEntity<PedidoResponse> iniciarCheckout(
+            @Valid @RequestBody CreatePedidoRequest request,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        AppUser usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Crear pedido en estado PENDING_CHECKOUT
+        PedidoResponse pedido = pedidoService.crearPedido(usuario.getId(), request);
+        return ResponseEntity.ok(pedido);
+    }
+
+    /**
+     * Actualizar datos de facturación del pedido
+     */
+    @PutMapping("/checkout/{id}/billing")
+    public ResponseEntity<PedidoResponse> actualizarFacturacion(
+            @PathVariable Long id,
+            @Valid @RequestBody BillingDataRequest request,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        AppUser usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        PedidoResponse pedido = pedidoService.actualizarFacturacion(id, usuario.getId(), request);
+        return ResponseEntity.ok(pedido);
+    }
+
+    /**
+     * Actualizar datos de envío del pedido
+     */
+    @PutMapping("/checkout/{id}/shipping")
+    public ResponseEntity<PedidoResponse> actualizarEnvio(
+            @PathVariable Long id,
+            @Valid @RequestBody ShippingDataRequest request,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        AppUser usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        PedidoResponse pedido = pedidoService.actualizarEnvio(id, usuario.getId(), request);
+        return ResponseEntity.ok(pedido);
+    }
+
+    /**
+     * Calcular costo de envío (cotización)
+     * Este endpoint calcula el costo de envío sin actualizar el pedido todavía
+     */
+    @PostMapping("/checkout/calculate-shipping")
+    public ResponseEntity<ShippingQuoteResponse> calcularEnvio(
+            @Valid @RequestBody ShippingQuoteRequest request
+    ) {
+        ShippingQuoteResponse quote = shippingService.calculateShipping(request);
+        return ResponseEntity.ok(quote);
+    }
+
+    /**
+     * Actualizar costo de envío del pedido
+     * Se llama después de calcular el envío para guardarlo en el pedido
+     */
+    @PutMapping("/checkout/{id}/shipping-cost")
+    public ResponseEntity<PedidoResponse> actualizarCostoEnvio(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Object> request,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        AppUser usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        BigDecimal shippingCost = request.containsKey("shippingCost") 
+            ? new BigDecimal(request.get("shippingCost").toString())
+            : BigDecimal.ZERO;
+
+        PedidoResponse pedido = pedidoService.actualizarCostoEnvio(id, usuario.getId(), shippingCost);
+        return ResponseEntity.ok(pedido);
+    }
+
+    /**
+     * Preparar para pago - cambia estado a PENDING_PAYMENT
+     * Se llama cuando el usuario está listo para pagar (después de completar facturación y envío)
+     */
+    @PostMapping("/checkout/{id}/prepare-payment")
+    public ResponseEntity<PedidoResponse> prepararPago(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        AppUser usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        PedidoResponse pedido = pedidoService.prepararPago(id, usuario.getId());
+        return ResponseEntity.ok(pedido);
     }
     
 }
