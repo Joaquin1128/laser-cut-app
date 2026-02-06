@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.BillingDataRequest;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.CreatePedidoRequest;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.PedidoResponse;
+import com.example.lasercut.laser_cut_back.domain.pedido.dto.PedidoWithCustomerResponse;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.ShippingDataRequest;
 import com.example.lasercut.laser_cut_back.domain.pedido.service.PedidoService;
 import com.example.lasercut.laser_cut_back.domain.auth.model.AppUser;
+import com.example.lasercut.laser_cut_back.domain.auth.model.UserRole;
 import com.example.lasercut.laser_cut_back.domain.auth.repository.UserRepository;
 import com.example.lasercut.laser_cut_back.domain.payment.dto.PreferenceResponse;
 import com.example.lasercut.laser_cut_back.domain.payment.service.MercadoPagoService;
@@ -69,6 +71,24 @@ public class PedidoController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         List<PedidoResponse> pedidos = pedidoService.obtenerPedidosPorUsuario(usuario.getId());
+        return ResponseEntity.ok(pedidos);
+    }
+
+    /**
+     * Lista todos los pedidos de todos los usuarios con información del cliente.
+     * Solo accesible para usuarios con rol ADMIN.
+     */
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<PedidoWithCustomerResponse>> obtenerTodosPedidosAdmin(Authentication authentication) {
+        String email = authentication.getName();
+        AppUser usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getRole() != UserRole.ADMIN) {
+            return ResponseEntity.status(403).build();
+        }
+
+        List<PedidoWithCustomerResponse> pedidos = pedidoService.obtenerTodosPedidosParaAdmin();
         return ResponseEntity.ok(pedidos);
     }
 

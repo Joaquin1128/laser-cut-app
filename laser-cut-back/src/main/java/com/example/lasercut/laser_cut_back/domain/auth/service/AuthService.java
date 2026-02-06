@@ -9,6 +9,7 @@ import com.example.lasercut.laser_cut_back.domain.auth.dto.AuthResponse;
 import com.example.lasercut.laser_cut_back.domain.auth.dto.LoginRequest;
 import com.example.lasercut.laser_cut_back.domain.auth.dto.RegisterRequest;
 import com.example.lasercut.laser_cut_back.domain.auth.model.AppUser;
+import com.example.lasercut.laser_cut_back.domain.auth.model.UserRole;
 import com.example.lasercut.laser_cut_back.domain.auth.repository.UserRepository;
 import com.example.lasercut.laser_cut_back.exception.BadRequestException;
 import com.example.lasercut.laser_cut_back.shared.service.JwtService;
@@ -53,6 +54,7 @@ public class AuthService {
         usuario.setNombre(request.getNombre());
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        usuario.setRole(UserRole.USER);
 
         // TODO: INTEGRACIÓN MERCADO PAGO
         // Aquí se creará el customer en Mercado Pago:
@@ -68,7 +70,8 @@ public class AuthService {
         AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo(
                 usuario.getId(),
                 usuario.getNombre(),
-                usuario.getEmail()
+                usuario.getEmail(),
+                usuario.getRole().name()
         );
 
         return new AuthResponse(token, "Bearer", userInfo);
@@ -91,7 +94,8 @@ public class AuthService {
         AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo(
                 usuario.getId(),
                 usuario.getNombre(),
-                usuario.getEmail()
+                usuario.getEmail(),
+                usuario.getRole().name()
         );
 
         return new AuthResponse(token, "Bearer", userInfo);
@@ -104,7 +108,8 @@ public class AuthService {
         return new AuthResponse.UserInfo(
                 usuario.getId(),
                 usuario.getNombre(),
-                usuario.getEmail()
+                usuario.getEmail(),
+                usuario.getRole().name()
         );
     }
 

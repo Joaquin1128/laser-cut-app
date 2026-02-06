@@ -13,6 +13,7 @@ import com.example.lasercut.laser_cut_back.domain.pedido.dto.BillingDataRequest;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.CreatePedidoRequest;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.PedidoItemRequest;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.PedidoResponse;
+import com.example.lasercut.laser_cut_back.domain.pedido.dto.PedidoWithCustomerResponse;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.ShippingDataRequest;
 import com.example.lasercut.laser_cut_back.domain.pedido.model.Pedido;
 import com.example.lasercut.laser_cut_back.domain.pedido.model.PedidoItem;
@@ -86,6 +87,16 @@ public class PedidoService {
         List<Pedido> pedidos = pedidoRepository.findByUsuarioIdOrderByCreatedAtDesc(userId);
         return pedidos.stream()
                 .map(PedidoResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lista todos los pedidos con datos del cliente. Solo para uso del admin.
+     */
+    public List<PedidoWithCustomerResponse> obtenerTodosPedidosParaAdmin() {
+        List<Pedido> pedidos = pedidoRepository.findAllOrderByCreatedAtDesc();
+        return pedidos.stream()
+                .map(PedidoWithCustomerResponse::new)
                 .collect(Collectors.toList());
     }
 

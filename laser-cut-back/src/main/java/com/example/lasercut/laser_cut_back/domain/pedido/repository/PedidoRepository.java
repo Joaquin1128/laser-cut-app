@@ -26,4 +26,9 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     @EntityGraph(attributePaths = {"items"})
     Optional<Pedido> findByMercadoPagoPreferenceId(String preferenceId);
 
+    /** Todos los pedidos ordenados por fecha (para admin), con items y usuario cargados. */
+    @EntityGraph(attributePaths = {"items", "usuario"})
+    @Query("SELECT p FROM Pedido p ORDER BY p.createdAt DESC")
+    List<Pedido> findAllOrderByCreatedAtDesc();
+
 }

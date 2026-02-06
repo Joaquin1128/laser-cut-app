@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -43,6 +45,10 @@ public class AppUser {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private UserRole role = UserRole.USER;
 
     public AppUser() {
     }
@@ -112,6 +118,14 @@ public class AppUser {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public UserRole getRole() {
+        return role != null ? role : UserRole.USER;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role != null ? role : UserRole.USER;
     }
     
 }
