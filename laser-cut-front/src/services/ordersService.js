@@ -56,6 +56,37 @@ export const ordersService = {
     }
   },
 
+  /**
+   * Obtener todos los pedidos de todos los usuarios (solo ADMIN).
+   * Incluye datos del cliente: customerId, customerNombre, customerEmail.
+   */
+  async obtenerTodosPedidosAdmin() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/admin/all`, {
+        method: 'GET',
+        headers: authService.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          authService.removeToken();
+          throw new Error('Sesión expirada');
+        }
+        if (response.status === 403) {
+          throw new Error('No tenés permiso para ver todos los pedidos');
+        }
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al obtener pedidos admin:', error);
+      throw error;
+    }
+  },
+
   async obtenerPedidoPorId(id) {
     try {
       const response = await fetch(`${API_BASE_URL}/orders/${id}`, {

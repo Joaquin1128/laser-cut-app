@@ -139,7 +139,7 @@
   color: #856404;
 }
 
-.order-status-en_proceso {
+.order-status-en-proceso {
   background: #cfe2ff;
   color: #084298;
 }
@@ -152,6 +152,31 @@
 .order-status-cancelado {
   background: #f8d7da;
   color: #842029;
+}
+
+.order-status-pending-checkout,
+.order-status-pending-payment {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.order-status-paid {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.admin-order-item .order-item-customer {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.admin-orders-header {
+  margin-bottom: 1.5rem;
+}
+
+.admin-orders-actions {
+  margin-top: 1rem;
 }
 
 .order-item-date {

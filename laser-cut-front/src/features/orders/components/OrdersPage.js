@@ -63,8 +63,11 @@ function OrdersPage() {
 
   const formatearEstado = (estado) => {
     const estados = {
+      PENDING_CHECKOUT: 'Checkout pendiente',
+      PENDING_PAYMENT: 'Pago pendiente',
       PENDIENTE: 'Pendiente',
       EN_PROCESO: 'En proceso',
+      PAID: 'Pagado',
       FINALIZADO: 'Finalizado',
       CANCELADO: 'Cancelado',
     };
@@ -181,7 +184,7 @@ function OrdersPage() {
                     <div className="order-item-id">
                       Pedido #{pedido.id}
                     </div>
-                    <div className={`order-item-status order-status-${pedido.status.toLowerCase()}`}>
+                    <div className={`order-item-status order-status-${(pedido.status || '').toLowerCase().replace(/_/g, '-')}`}>
                       {formatearEstado(pedido.status)}
                     </div>
                   </div>

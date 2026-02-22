@@ -9,6 +9,7 @@ import QuotePage from './features/quote/components/QuotePage';
 import CartPage from './features/cart/components/CartPage';
 import CheckoutPage from './features/checkout/components/CheckoutPage';
 import OrdersPage from './features/orders/components/OrdersPage';
+import AdminOrdersPage from './features/orders/components/AdminOrdersPage';
 import PaymentResultPage from './features/payment/components/PaymentResultPage';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/admin/orders" element={<AdminOrdersPage />} />
               <Route path="/payment/success" element={<PaymentResultPage />} />
               <Route path="/payment/failure" element={<PaymentResultPage />} />
               <Route path="/payment/pending" element={<PaymentResultPage />} />

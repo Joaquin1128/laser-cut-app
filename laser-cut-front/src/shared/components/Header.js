@@ -30,6 +30,12 @@ function Header({ children }) {
     }
   };
 
+  const handleAdminClick = () => {
+    if (isAuthenticated && user?.role === 'ADMIN') {
+      navigate('/admin/orders');
+    }
+  };
+
   const handleLogout = () => {
     logout();
   };
@@ -67,6 +73,15 @@ function Header({ children }) {
         >
           PEDIDOS
         </button>
+        {isAuthenticated && user?.role === 'ADMIN' && (
+          <button 
+            className="btn-login-header btn-admin-header" 
+            type="button"
+            onClick={handleAdminClick}
+          >
+            ADMIN
+          </button>
+        )}
         {isAuthenticated ? (
           <div className="header-user-menu">
             <span className="header-user-greeting">Hola, {user?.nombre}</span>

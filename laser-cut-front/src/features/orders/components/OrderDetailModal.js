@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import '../OrderDetailModal.css';
 
-function OrderDetailModal({ pedido, onClose }) {
+function OrderDetailModal({ pedido, onClose, showCustomerInfo = false }) {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
@@ -37,8 +37,11 @@ function OrderDetailModal({ pedido, onClose }) {
 
   const formatearEstado = (estado) => {
     const estados = {
+      PENDING_CHECKOUT: 'Checkout pendiente',
+      PENDING_PAYMENT: 'Pago pendiente',
       PENDIENTE: 'Pendiente',
       EN_PROCESO: 'En proceso',
+      PAID: 'Pagado',
       FINALIZADO: 'Finalizado',
       CANCELADO: 'Cancelado',
     };
@@ -95,6 +98,20 @@ function OrderDetailModal({ pedido, onClose }) {
           <span className="order-detail-label">Fecha:</span>
           <span className="order-detail-value">{formatearFecha(pedido.createdAt)}</span>
         </div>
+
+        {(showCustomerInfo && (pedido.customerNombre || pedido.customerEmail)) && (
+          <div className="order-detail-modal-customer">
+            <h3 className="order-detail-section-title">Cliente</h3>
+            <div className="order-detail-item-row">
+              <span className="order-detail-label">Nombre:</span>
+              <span className="order-detail-value">{pedido.customerNombre || '--'}</span>
+            </div>
+            <div className="order-detail-item-row">
+              <span className="order-detail-label">Email:</span>
+              <span className="order-detail-value">{pedido.customerEmail || '--'}</span>
+            </div>
+          </div>
+        )}
 
         <div className="order-detail-modal-items">
           <h3 className="order-detail-section-title">Items del pedido ({pedido.items?.length || 0})</h3>
