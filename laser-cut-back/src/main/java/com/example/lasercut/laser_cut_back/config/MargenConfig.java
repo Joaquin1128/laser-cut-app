@@ -41,6 +41,7 @@ public class MargenConfig {
     }
 
     public static class Tramo {
+
         private double precioHasta;
         private double margen;
 
@@ -59,6 +60,7 @@ public class MargenConfig {
         public void setMargen(double margen) {
             this.margen = margen;
         }
+        
     }
 
 }

@@ -24,7 +24,6 @@ import com.example.lasercut.laser_cut_back.exception.BadRequestException;
 public class DxfParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DxfParser.class);
-
     private static final String[] TIPOS_ENTIDAD = {"LINE", "ARC", "CIRCLE", "POLYLINE", "LWPOLYLINE"};
 
     private static void validarArcosCerrados(DXFDocument doc) {

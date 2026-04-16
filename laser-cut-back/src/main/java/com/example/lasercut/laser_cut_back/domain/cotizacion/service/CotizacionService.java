@@ -112,8 +112,8 @@ public class CotizacionService {
             double factorRecargo = Math.min(longitudCorte * tasaRecargoPorMm, recargoMaximo);
             double precioFabrica = precioBase * (1.0 + factorRecargo);
 
-            // Margen de la plataforma sobre el precio de fábrica
-            double margen = margenConfig.resolverMargen(precioFabrica);
+            // Margen de la plataforma: el tramo se resuelve por el total de fábrica (precio × cantidad)
+            double margen = margenConfig.resolverMargen(precioFabrica * cantidad);
             double precioUnitario = precioFabrica * (1.0 + margen);
 
             double precioTotal = precioUnitario * cantidad;
