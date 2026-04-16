@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.lasercut.laser_cut_back.config.MargenConfig;
 import com.example.lasercut.laser_cut_back.domain.cotizacion.dto.CotizacionResponse;
 import com.example.lasercut.laser_cut_back.domain.catalogo.repository.MaterialRepository;
 import com.example.lasercut.laser_cut_back.exception.BadRequestException;
@@ -26,6 +27,7 @@ public class CotizacionService {
     private static final String INCH = "inch";
 
     private final MaterialRepository materialRepository;
+    private final MargenConfig margenConfig;
 
     @Value("${pricing.factor.densidad:8.0}")
     private double factorDensidad;
@@ -48,8 +50,9 @@ public class CotizacionService {
     @Value("${pricing.corte.recargo.maximo:0.50}")
     private double recargoMaximo;
 
-    public CotizacionService(MaterialRepository materialRepository) {
+    public CotizacionService(MaterialRepository materialRepository, MargenConfig margenConfig) {
         this.materialRepository = materialRepository;
+        this.margenConfig = margenConfig;
     }
 
     private void validateInputs(MultipartFile archivo, double espesorMm, String material, int cantidad) {
@@ -107,7 +110,11 @@ public class CotizacionService {
 
             // Recargo por longitud de corte: proporcional al precio base
             double factorRecargo = Math.min(longitudCorte * tasaRecargoPorMm, recargoMaximo);
-            double precioUnitario = precioBase * (1.0 + factorRecargo);
+            double precioFabrica = precioBase * (1.0 + factorRecargo);
+
+            // Margen de la plataforma sobre el precio de fábrica
+            double margen = margenConfig.resolverMargen(precioFabrica);
+            double precioUnitario = precioFabrica * (1.0 + margen);
 
             double precioTotal = precioUnitario * cantidad;
 
@@ -117,9 +124,11 @@ public class CotizacionService {
 
             logger.info(
                 "Cotización: material={}, ancho={}mm, alto={}mm, espesor={}mm, peso={}kg, " +
-                "longitudCorte={}mm, factorRecargo={}%, precioUnitario={}, cantidad={}, unidad={}, precioTotal={}",
+                "longitudCorte={}mm, factorRecargo={}%, precioFabrica={}, margen={}%, " +
+                "precioUnitario={}, cantidad={}, unidad={}, precioTotal={}",
                 material, round(ancho, 2), round(alto, 2), round(espesorMm, 2), peso,
                 round(longitudCorte, 1), round(factorRecargo * 100, 1),
+                round(precioFabrica, 2), round(margen * 100, 1),
                 precioUnitario, cantidad, unidad, precioTotal
             );
 
