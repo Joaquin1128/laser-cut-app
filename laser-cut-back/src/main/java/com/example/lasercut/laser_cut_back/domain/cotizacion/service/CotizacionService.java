@@ -7,30 +7,51 @@ import java.math.RoundingMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.lasercut.laser_cut_back.domain.cotizacion.dto.CotizacionResponse;
 import com.example.lasercut.laser_cut_back.domain.catalogo.repository.MaterialRepository;
 import com.example.lasercut.laser_cut_back.exception.BadRequestException;
+import com.example.lasercut.laser_cut_back.shared.util.DxfAnalysis;
 import com.example.lasercut.laser_cut_back.shared.util.DxfParser;
 
 @Service
 public class CotizacionService {
 
-    private final MaterialRepository materialRepository;
-
     private static final Logger logger = LoggerFactory.getLogger(CotizacionService.class);
 
-    private static final double FACTOR_DENSIDAD = 8.0;
-    private static final double PRECIO_POR_KG = 5000.0;
     private static final String MM = "mm";
     private static final String INCH = "inch";
+
+    private final MaterialRepository materialRepository;
+
+    @Value("${pricing.factor.densidad:8.0}")
+    private double factorDensidad;
+
+    @Value("${pricing.precio.por.kg:5000.0}")
+    private double precioPorKg;
+
+    /**
+     * Recargo por longitud de corte: factor multiplicado por la longitud en mm
+     * da el porcentaje adicional sobre el precio base.
+     * Ejemplo con tasa=0.0002: 500mm → +10%, 1000mm → +20%
+     */
+    @Value("${pricing.corte.tasa.por.mm:0.0002}")
+    private double tasaRecargoPorMm;
+
+    /**
+     * Porcentaje máximo de recargo por longitud de corte (ej: 0.50 = 50%).
+     * Evita que piezas muy complejas se vuelvan prohibitivas.
+     */
+    @Value("${pricing.corte.recargo.maximo:0.50}")
+    private double recargoMaximo;
 
     public CotizacionService(MaterialRepository materialRepository) {
         this.materialRepository = materialRepository;
     }
-    
+
     private void validateInputs(MultipartFile archivo, double espesorMm, String material, int cantidad) {
         if (archivo == null || archivo.isEmpty()) {
             throw new BadRequestException("El archivo DXF no puede estar vacío.");
@@ -51,8 +72,7 @@ public class CotizacionService {
         if (material == null) {
             throw new BadRequestException("El material es requerido.");
         }
-        if (materialRepository.findByNombreIgnoreCase(material.trim().toLowerCase()).isEmpty())
-        {
+        if (materialRepository.findByNombreIgnoreCase(material.trim().toLowerCase()).isEmpty()) {
             throw new BadRequestException("Material no soportado");
         }
     }
@@ -66,25 +86,42 @@ public class CotizacionService {
     public CotizacionResponse calcular(MultipartFile archivo, double espesorMm, String material, int cantidad, String unidad) throws IOException {
         validateInputs(archivo, espesorMm, material, cantidad);
 
-        try (InputStream dimensionsStream = archivo.getInputStream()) {
-            double[] wh = DxfParser.getWidthHeightMillimeters(dimensionsStream);
-            double ancho = wh[0];
-            double alto = wh[1];
+        try (InputStream stream = archivo.getInputStream()) {
+            DxfAnalysis analysis = DxfParser.analyze(stream);
+
+            double ancho = analysis.width;
+            double alto = analysis.height;
+            double longitudCorte = analysis.cutLengthMm;
 
             if (INCH.equalsIgnoreCase(unidad)) {
                 ancho *= 10;
                 alto *= 10;
+                longitudCorte *= 10;
             } else if (!MM.equalsIgnoreCase(unidad)) {
                 throw new BadRequestException("Unidad no soportada. Opciones válidas: 'mm' o 'inch'.");
             }
 
-            double peso = (ancho * alto * espesorMm * FACTOR_DENSIDAD) / 1_000_000.0;
-            double precioUnitario = peso * PRECIO_POR_KG;
+            // Precio base por área y peso
+            double peso = (ancho * alto * espesorMm * factorDensidad) / 1_000_000.0;
+            double precioBase = peso * precioPorKg;
+
+            // Recargo por longitud de corte: proporcional al precio base
+            double factorRecargo = Math.min(longitudCorte * tasaRecargoPorMm, recargoMaximo);
+            double precioUnitario = precioBase * (1.0 + factorRecargo);
+
             double precioTotal = precioUnitario * cantidad;
 
             peso = round(peso, 4);
             precioUnitario = round(precioUnitario, 2);
             precioTotal = round(precioTotal, 2);
+
+            logger.info(
+                "Cotización: material={}, ancho={}mm, alto={}mm, espesor={}mm, peso={}kg, " +
+                "longitudCorte={}mm, factorRecargo={}%, precioUnitario={}, cantidad={}, unidad={}, precioTotal={}",
+                material, round(ancho, 2), round(alto, 2), round(espesorMm, 2), peso,
+                round(longitudCorte, 1), round(factorRecargo * 100, 1),
+                precioUnitario, cantidad, unidad, precioTotal
+            );
 
             CotizacionResponse resp = new CotizacionResponse();
             resp.setMaterial(material);
@@ -97,11 +134,8 @@ public class CotizacionService {
             resp.setUnidad(unidad);
             resp.setPrecioTotal(precioTotal);
 
-            logger.info("Cotización calculada: material={}, ancho={}mm, alto={}mm, espesor={}mm, peso={}kg, precioUnitario={}, cantidad={}, unidad={}, precioTotal={}",
-                material, ancho, alto, espesorMm, peso, precioUnitario, cantidad, unidad, precioTotal);
-
             return resp;
         }
     }
-    
+
 }
