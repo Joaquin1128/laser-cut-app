@@ -288,5 +288,82 @@ public class PedidoService {
                 return Pedido.PaymentStatus.PENDING;
         }
     }
+
+    /**
+     * Permite al administrador cambiar el estado de un pedido según la máquina de estados estricta.
+     * Soporta confirmación de pagos por transferencia bancaria.
+     */
+    @Transactional
+    public PedidoWithCustomerResponse cambiarEstadoAdmin(Long pedidoId, String nuevoEstadoStr, String paymentMethod, String motivo) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+        Pedido.OrderStatus estadoActual = pedido.getStatus();
+
+        Pedido.OrderStatus nuevoEstado;
+        try {
+            nuevoEstado = Pedido.OrderStatus.valueOf(nuevoEstadoStr.toUpperCase().trim());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new BadRequestException("Estado de pedido inválido: " + nuevoEstadoStr);
+        }
+
+        if (estadoActual == nuevoEstado) {
+            return new PedidoWithCustomerResponse(pedido);
+        }
+
+        // Validación estricta de transiciones
+        switch (estadoActual) {
+            case PENDING_CHECKOUT:
+                if (nuevoEstado != Pedido.OrderStatus.CANCELADO) {
+                    throw new BadRequestException("Un pedido en proceso de checkout solo puede ser cancelado.");
+                }
+                pedido.setPaymentStatus(Pedido.PaymentStatus.CANCELLED);
+                break;
+
+            case PENDING_PAYMENT:
+            case PENDIENTE:
+                if (nuevoEstado == Pedido.OrderStatus.PAID) {
+                    pedido.setPaymentStatus(Pedido.PaymentStatus.APPROVED);
+                    pedido.setPaymentMethod(paymentMethod != null && !paymentMethod.isBlank() ? paymentMethod : "TRANSFERENCIA");
+                } else if (nuevoEstado == Pedido.OrderStatus.CANCELADO) {
+                    pedido.setPaymentStatus(Pedido.PaymentStatus.CANCELLED);
+                } else {
+                    throw new BadRequestException("No se puede pasar a " + nuevoEstado + " sin haber confirmado el pago primero (estado PAID).");
+                }
+                break;
+
+            case PAID:
+                if (nuevoEstado == Pedido.OrderStatus.EN_PROCESO) {
+                    // Mantiene PaymentStatus.APPROVED
+                } else if (nuevoEstado == Pedido.OrderStatus.CANCELADO) {
+                    pedido.setPaymentStatus(Pedido.PaymentStatus.REFUNDED);
+                } else {
+                    throw new BadRequestException("Desde PAID solo se puede avanzar a EN_PROCESO o CANCELADO.");
+                }
+                break;
+
+            case EN_PROCESO:
+                if (nuevoEstado == Pedido.OrderStatus.FINALIZADO) {
+                    // Completado exitosamente
+                } else if (nuevoEstado == Pedido.OrderStatus.CANCELADO) {
+                    pedido.setPaymentStatus(Pedido.PaymentStatus.CANCELLED);
+                } else {
+                    throw new BadRequestException("Desde EN_PROCESO solo se puede avanzar a FINALIZADO o CANCELADO.");
+                }
+                break;
+
+            case FINALIZADO:
+                throw new BadRequestException("El pedido #" + pedidoId + " ya está FINALIZADO y no puede modificarse.");
+
+            case CANCELADO:
+                throw new BadRequestException("El pedido #" + pedidoId + " está CANCELADO y no puede modificarse.");
+
+            default:
+                throw new BadRequestException("Transición no soportada desde estado " + estadoActual);
+        }
+
+        pedido.setStatus(nuevoEstado);
+        pedido = pedidoRepository.save(pedido);
+
+        return new PedidoWithCustomerResponse(pedido);
+    }
     
 }

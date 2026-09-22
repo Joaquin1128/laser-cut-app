@@ -61,6 +61,9 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
+    @Column(name = "payment_method")
+    private String paymentMethod; // "MERCADO_PAGO", "TRANSFERENCIA", etc.
+
     // Campos de facturación
     @Column(name = "billing_name")
     private String billingName; // Nombre o razón social
@@ -202,6 +205,14 @@ public class Pedido {
 
     public void setPaymentStatus(PaymentStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public enum OrderStatus {

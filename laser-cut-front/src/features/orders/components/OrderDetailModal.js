@@ -1,7 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ordersService } from '../../../services/ordersService';
 import '../OrderDetailModal.css';
 
-function OrderDetailModal({ pedido, onClose, showCustomerInfo = false }) {
+function OrderDetailModal({ pedido, onClose, showCustomerInfo = false, onStatusUpdated }) {
+  const [currentPedido, setCurrentPedido] = useState(pedido);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
+
+  useEffect(() => {
+    setCurrentPedido(pedido);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+  }, [pedido]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
@@ -13,7 +25,7 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  if (!pedido) {
+  if (!currentPedido) {
     return null;
   }
 
@@ -66,6 +78,41 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false }) {
     }
   };
 
+  const handleCambiarEstado = async (nuevoEstado, extraData = {}) => {
+    let confirmText = '';
+    if (nuevoEstado === 'PAID') {
+      confirmText = `¿Confirmar recepción del pago (Transferencia) para el Pedido #${currentPedido.id}? El estado pasará a "Pagado".`;
+    } else if (nuevoEstado === 'EN_PROCESO') {
+      confirmText = `¿Iniciar la fabricación para el Pedido #${currentPedido.id}? El estado pasará a "En proceso".`;
+    } else if (nuevoEstado === 'FINALIZADO') {
+      confirmText = `¿Marcar el Pedido #${currentPedido.id} como "Finalizado"?`;
+    } else if (nuevoEstado === 'CANCELADO') {
+      confirmText = `¿Estás seguro de cancelar el Pedido #${currentPedido.id}? Esta acción es definitiva.`;
+    }
+
+    if (confirmText && !window.confirm(confirmText)) {
+      return;
+    }
+
+    setIsUpdating(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const updated = await ordersService.actualizarEstadoPedidoAdmin(currentPedido.id, {
+        nuevoEstado,
+        ...extraData,
+      });
+      setCurrentPedido(updated);
+      setSuccessMsg(`Estado actualizado a "${formatearEstado(updated.status)}" correctamente.`);
+      onStatusUpdated?.(updated);
+    } catch (err) {
+      setErrorMsg(err.message || 'Error al actualizar el estado del pedido');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div
       className="order-detail-modal-overlay"
@@ -88,36 +135,36 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false }) {
         </button>
 
         <div className="order-detail-modal-header">
-          <h2 className="order-detail-modal-title">Pedido #{pedido.id}</h2>
-          <div className={`order-detail-status order-status-${pedido.status?.toLowerCase()}`}>
-            {formatearEstado(pedido.status)}
+          <h2 className="order-detail-modal-title">Pedido #{currentPedido.id}</h2>
+          <div className={`order-detail-status order-status-${(currentPedido.status || '').toLowerCase().replace(/_/g, '-')}`}>
+            {formatearEstado(currentPedido.status)}
           </div>
         </div>
 
         <div className="order-detail-modal-date">
           <span className="order-detail-label">Fecha:</span>
-          <span className="order-detail-value">{formatearFecha(pedido.createdAt)}</span>
+          <span className="order-detail-value">{formatearFecha(currentPedido.createdAt)}</span>
         </div>
 
-        {(showCustomerInfo && (pedido.customerNombre || pedido.customerEmail)) && (
+        {(showCustomerInfo && (currentPedido.customerNombre || currentPedido.customerEmail)) && (
           <div className="order-detail-modal-customer">
             <h3 className="order-detail-section-title">Cliente</h3>
             <div className="order-detail-item-row">
               <span className="order-detail-label">Nombre:</span>
-              <span className="order-detail-value">{pedido.customerNombre || '--'}</span>
+              <span className="order-detail-value">{currentPedido.customerNombre || '--'}</span>
             </div>
             <div className="order-detail-item-row">
               <span className="order-detail-label">Email:</span>
-              <span className="order-detail-value">{pedido.customerEmail || '--'}</span>
+              <span className="order-detail-value">{currentPedido.customerEmail || '--'}</span>
             </div>
           </div>
         )}
 
         <div className="order-detail-modal-items">
-          <h3 className="order-detail-section-title">Items del pedido ({pedido.items?.length || 0})</h3>
-          {pedido.items && pedido.items.length > 0 ? (
+          <h3 className="order-detail-section-title">Items del pedido ({currentPedido.items?.length || 0})</h3>
+          {currentPedido.items && currentPedido.items.length > 0 ? (
             <div className="order-detail-items-list">
-              {pedido.items.map((item) => {
+              {currentPedido.items.map((item) => {
                 const metadata = parseMetadata(item.metadata);
                 return (
                   <div key={item.id} className="order-detail-item">
@@ -183,17 +230,133 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false }) {
         <div className="order-detail-modal-summary">
           <div className="order-detail-summary-row">
             <span className="order-detail-label">Total del pedido:</span>
-            <span className="order-detail-total highlight">{formatearPrecio(pedido.totalPrice)}</span>
+            <span className="order-detail-total highlight">{formatearPrecio(currentPedido.totalPrice)}</span>
           </div>
-          {pedido.paymentStatus && (
+          {currentPedido.paymentStatus && (
             <div className="order-detail-summary-row">
               <span className="order-detail-label">Estado del pago:</span>
-              <span className={`order-detail-value payment-status-${pedido.paymentStatus?.toLowerCase()}`}>
-                {pedido.paymentStatus}
+              <span className={`order-detail-value payment-status-${currentPedido.paymentStatus?.toLowerCase()}`}>
+                {currentPedido.paymentStatus}
+              </span>
+            </div>
+          )}
+          {currentPedido.paymentMethod && (
+            <div className="order-detail-summary-row">
+              <span className="order-detail-label">Método de pago:</span>
+              <span className="order-detail-value">
+                {currentPedido.paymentMethod}
               </span>
             </div>
           )}
         </div>
+
+        {showCustomerInfo && (
+          <div className="order-detail-admin-panel">
+            <h3 className="order-detail-section-title">Gestión del Pedido (Admin)</h3>
+
+            {errorMsg && (
+              <div className="order-admin-feedback error">
+                {errorMsg}
+              </div>
+            )}
+            {successMsg && (
+              <div className="order-admin-feedback success">
+                {successMsg}
+              </div>
+            )}
+
+            <div className="order-admin-actions">
+              {currentPedido.status === 'PENDING_CHECKOUT' && (
+                <>
+                  <p className="order-admin-hint">El cliente aún no ha completado el checkout.</p>
+                  <button
+                    type="button"
+                    className="btn-admin-cancel"
+                    disabled={isUpdating}
+                    onClick={() => handleCambiarEstado('CANCELADO')}
+                  >
+                    {isUpdating ? 'Actualizando...' : '✕ Cancelar Pedido'}
+                  </button>
+                </>
+              )}
+
+              {currentPedido.status === 'PENDING_PAYMENT' && (
+                <>
+                  <button
+                    type="button"
+                    className="btn-admin-confirm"
+                    disabled={isUpdating}
+                    onClick={() => handleCambiarEstado('PAID', { paymentMethod: 'TRANSFERENCIA' })}
+                  >
+                    {isUpdating ? 'Actualizando...' : '✓ Confirmar Pago (Transferencia)'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-admin-cancel"
+                    disabled={isUpdating}
+                    onClick={() => handleCambiarEstado('CANCELADO')}
+                  >
+                    {isUpdating ? 'Actualizando...' : '✕ Cancelar Pedido'}
+                  </button>
+                </>
+              )}
+
+              {currentPedido.status === 'PAID' && (
+                <>
+                  <button
+                    type="button"
+                    className="btn-admin-process"
+                    disabled={isUpdating}
+                    onClick={() => handleCambiarEstado('EN_PROCESO')}
+                  >
+                    {isUpdating ? 'Actualizando...' : '⚙ Iniciar Fabricación (En Proceso)'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-admin-cancel"
+                    disabled={isUpdating}
+                    onClick={() => handleCambiarEstado('CANCELADO')}
+                  >
+                    {isUpdating ? 'Actualizando...' : '✕ Cancelar Pedido'}
+                  </button>
+                </>
+              )}
+
+              {currentPedido.status === 'EN_PROCESO' && (
+                <>
+                  <button
+                    type="button"
+                    className="btn-admin-finish"
+                    disabled={isUpdating}
+                    onClick={() => handleCambiarEstado('FINALIZADO')}
+                  >
+                    {isUpdating ? 'Actualizando...' : '✓ Marcar como Finalizado'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-admin-cancel"
+                    disabled={isUpdating}
+                    onClick={() => handleCambiarEstado('CANCELADO')}
+                  >
+                    {isUpdating ? 'Actualizando...' : '✕ Cancelar Pedido'}
+                  </button>
+                </>
+              )}
+
+              {currentPedido.status === 'FINALIZADO' && (
+                <div className="order-admin-terminal-badge finalized">
+                  ✓ Este pedido ya se encuentra finalizado. No requiere más acciones.
+                </div>
+              )}
+
+              {currentPedido.status === 'CANCELADO' && (
+                <div className="order-admin-terminal-badge cancelled">
+                  ✕ Este pedido fue cancelado. No se pueden realizar más cambios.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="order-detail-modal-actions">
           <button

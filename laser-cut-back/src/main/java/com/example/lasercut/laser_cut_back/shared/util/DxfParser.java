@@ -12,6 +12,7 @@ import org.kabeja.dxf.DXFLayer;
 import org.kabeja.dxf.DXFLine;
 import org.kabeja.dxf.DXFLWPolyline;
 import org.kabeja.dxf.DXFPolyline;
+import org.kabeja.dxf.DXFInsert;
 import org.kabeja.dxf.Bounds;
 import org.kabeja.dxf.DXFEntity;
 import org.kabeja.parser.Parser;
@@ -24,7 +25,9 @@ import com.example.lasercut.laser_cut_back.exception.BadRequestException;
 public class DxfParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DxfParser.class);
-    private static final String[] TIPOS_ENTIDAD = {"LINE", "ARC", "CIRCLE", "POLYLINE", "LWPOLYLINE"};
+    private static final String[] TIPOS_ENTIDAD = {
+        "LINE", "ARC", "CIRCLE", "POLYLINE", "LWPOLYLINE", "SPLINE", "ELLIPSE", "INSERT"
+    };
 
     private static void validarArcosCerrados(DXFDocument doc) {
         final double TOLERANCIA_ANGULO = 0.01;
@@ -70,7 +73,10 @@ public class DxfParser {
      *   DXFLine     → distancia euclidiana entre extremos
      *   DXFArc      → longitud de arco (radio × ángulo en radianes)
      *   DXFCircle   → perímetro (2π × radio)
-     *   DXFPolyline / DXFLWPolyline → suma de segmentos entre vértices
+     *   DXFPolyline / DXFLWPolyline → suma de segmentos (incluyendo arcos con bulge)
+     *   DXFSpline   → aproximación poligonal de la spline
+     *   DXFEllipse  → perímetro de arco o elipse completa
+     *   DXFInsert   → longitud de entidades del bloque insertado (ponderada por escala)
      */
     private static double calcularLongitudCorte(DXFDocument doc) {
         double total = 0.0;
@@ -87,11 +93,20 @@ public class DxfParser {
                 if (entities == null) continue;
 
                 for (DXFEntity e : entities) {
-                    if (e instanceof DXFLine)            total += ((DXFLine) e).getLength();
-                    else if (e instanceof DXFArc)        total += ((DXFArc) e).getLength();
-                    else if (e instanceof DXFCircle)     total += ((DXFCircle) e).getLength();
-                    else if (e instanceof DXFLWPolyline) total += ((DXFLWPolyline) e).getLength();
-                    else if (e instanceof DXFPolyline)   total += ((DXFPolyline) e).getLength();
+                    if (e == null) continue;
+                    double len;
+                    if (e instanceof DXFInsert) {
+                        DXFInsert insert = (DXFInsert) e;
+                        double rawLen = insert.getLength();
+                        double scale = insert.getScaleX() != 0.0 ? Math.abs(insert.getScaleX()) : 1.0;
+                        len = rawLen * scale;
+                    } else {
+                        len = e.getLength();
+                    }
+
+                    if (Double.isFinite(len) && len > 0) {
+                        total += len;
+                    }
                 }
             }
         }

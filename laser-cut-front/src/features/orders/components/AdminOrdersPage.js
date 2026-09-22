@@ -202,6 +202,14 @@ function AdminOrdersPage() {
                         </span>
                       </div>
                     )}
+                    {pedido.paymentMethod && (
+                      <div className="order-item-customer">
+                        <span className="order-detail-label">Método:</span>
+                        <span className="order-detail-value">
+                          {pedido.paymentMethod}
+                        </span>
+                      </div>
+                    )}
                     <div className="order-item-details">
                       <div className="order-item-info-row">
                         <span className="order-detail-label">Items:</span>
@@ -235,6 +243,12 @@ function AdminOrdersPage() {
           pedido={selectedPedido}
           onClose={handleCloseOrderDetail}
           showCustomerInfo
+          onStatusUpdated={(updatedPedido) => {
+            setSelectedPedido(updatedPedido);
+            setPedidos((prev) =>
+              prev.map((p) => (p.id === updatedPedido.id ? updatedPedido : p))
+            );
+          }}
         />
       )}
     </div>

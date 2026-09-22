@@ -25,6 +25,7 @@ public class CotizacionService {
 
     private static final String MM = "mm";
     private static final String INCH = "inch";
+    private static final double MM_POR_PULGADA = 25.4;
 
     private final MaterialRepository materialRepository;
     private final MargenConfig margenConfig;
@@ -97,9 +98,9 @@ public class CotizacionService {
             double longitudCorte = analysis.cutLengthMm;
 
             if (INCH.equalsIgnoreCase(unidad)) {
-                ancho *= 10;
-                alto *= 10;
-                longitudCorte *= 10;
+                ancho *= MM_POR_PULGADA;
+                alto *= MM_POR_PULGADA;
+                longitudCorte *= MM_POR_PULGADA;
             } else if (!MM.equalsIgnoreCase(unidad)) {
                 throw new BadRequestException("Unidad no soportada. Opciones válidas: 'mm' o 'inch'.");
             }

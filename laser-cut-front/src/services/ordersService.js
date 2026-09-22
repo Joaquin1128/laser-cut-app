@@ -87,6 +87,39 @@ export const ordersService = {
     }
   },
 
+  /**
+   * Cambiar estado de un pedido (solo ADMIN).
+   * @param {number} pedidoId
+   * @param {Object} params - { nuevoEstado, paymentMethod, motivo }
+   */
+  async actualizarEstadoPedidoAdmin(pedidoId, { nuevoEstado, paymentMethod, motivo } = {}) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/admin/${pedidoId}/status`, {
+        method: 'PUT',
+        headers: authService.getAuthHeaders(),
+        body: JSON.stringify({ nuevoEstado, paymentMethod, motivo }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          authService.removeToken();
+          throw new Error('Sesión expirada');
+        }
+        if (response.status === 403) {
+          throw new Error('No tenés permiso de administrador para cambiar el estado');
+        }
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al actualizar estado del pedido:', error);
+      throw error;
+    }
+  },
+
   async obtenerPedidoPorId(id) {
     try {
       const response = await fetch(`${API_BASE_URL}/orders/${id}`, {

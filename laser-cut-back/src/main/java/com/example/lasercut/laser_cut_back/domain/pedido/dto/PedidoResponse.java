@@ -19,6 +19,7 @@ public class PedidoResponse {
     private BigDecimal totalPrice;
     private List<PedidoItemResponse> items;
     private String paymentStatus; // Estado del pago de Mercado Pago
+    private String paymentMethod; // "MERCADO_PAGO", "TRANSFERENCIA", etc.
 
     // Datos de facturación
     private String billingName;
@@ -54,6 +55,7 @@ public class PedidoResponse {
         if (pedido.getPaymentStatus() != null) {
             this.paymentStatus = pedido.getPaymentStatus().name();
         }
+        this.paymentMethod = pedido.getPaymentMethod();
 
         // Datos de facturación
         this.billingName = pedido.getBillingName();
@@ -124,6 +126,14 @@ public class PedidoResponse {
 
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     // Getters y Setters para facturación

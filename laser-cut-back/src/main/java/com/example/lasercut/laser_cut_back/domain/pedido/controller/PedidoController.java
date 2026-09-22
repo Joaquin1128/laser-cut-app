@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.BillingDataRequest;
+import com.example.lasercut.laser_cut_back.domain.pedido.dto.CambiarEstadoPedidoRequest;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.CreatePedidoRequest;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.PedidoResponse;
 import com.example.lasercut.laser_cut_back.domain.pedido.dto.PedidoWithCustomerResponse;
@@ -90,6 +91,33 @@ public class PedidoController {
 
         List<PedidoWithCustomerResponse> pedidos = pedidoService.obtenerTodosPedidosParaAdmin();
         return ResponseEntity.ok(pedidos);
+    }
+
+    /**
+     * Cambia el estado de un pedido según la máquina de estados estricta.
+     * Solo accesible para usuarios con rol ADMIN.
+     */
+    @PutMapping("/admin/{id}/status")
+    public ResponseEntity<PedidoWithCustomerResponse> cambiarEstadoPedidoAdmin(
+            @PathVariable Long id,
+            @Valid @RequestBody CambiarEstadoPedidoRequest request,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        AppUser usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getRole() != UserRole.ADMIN) {
+            return ResponseEntity.status(403).build();
+        }
+
+        PedidoWithCustomerResponse actualizado = pedidoService.cambiarEstadoAdmin(
+                id,
+                request.getNuevoEstado(),
+                request.getPaymentMethod(),
+                request.getMotivo()
+        );
+        return ResponseEntity.ok(actualizado);
     }
 
     @GetMapping("/{id}")
