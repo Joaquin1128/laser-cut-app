@@ -17,7 +17,7 @@ function BillingShippingStep({
   onBack,
   isLoading,
 }) {
-  const { getCartTotal } = useCart();
+  const { cartItems, getCartTotal } = useCart();
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
   const [quoteError, setQuoteError] = useState(null);
   const subtotal = getCartTotal();
@@ -36,6 +36,21 @@ function BillingShippingStep({
     }));
   };
 
+  const calculateTotalWeight = () => {
+    if (!cartItems || cartItems.length === 0) return 1.0;
+    let totalKg = 0;
+    cartItems.forEach(item => {
+      const ancho = item.archivo?.dimensiones?.ancho || item.archivo?.ancho || 100;
+      const alto = item.archivo?.dimensiones?.alto || item.archivo?.alto || 100;
+      const espesor = item.material?.espesorSeleccionado || item.material?.espesor?.espesorMm || item.espesor || 1.5;
+      const densidad = item.material?.densidad || 7.85; // g/cm³ estándar para metales
+      const cantidad = item.cantidad || 1;
+      const pesoUnitario = (ancho * alto * espesor * densidad) / 1000000.0;
+      totalKg += pesoUnitario * cantidad;
+    });
+    return Math.max(0.5, Math.round(totalKg * 100) / 100);
+  };
+
   const calculateShipping = async () => {
     if (!shippingData.street || !shippingData.city || !shippingData.postalCode || !shippingData.province) {
       setQuoteError('Por favor completá todos los campos de dirección');
@@ -46,8 +61,7 @@ function BillingShippingStep({
     setQuoteError(null);
 
     try {
-      // Calcular peso total estimado (simplificado: 1kg por item)
-      const totalWeight = 1.0; // En producción, calcular desde los items del pedido
+      const totalWeight = calculateTotalWeight();
 
       const quoteRequest = {
         street: shippingData.street,
@@ -56,7 +70,6 @@ function BillingShippingStep({
         province: shippingData.province,
         country: 'Argentina',
         totalWeight: totalWeight,
-        // Incluir datos del destinatario para Andreani
         destinatarioNombre: billingData.billingName,
         destinatarioTelefono: billingData.billingPhone,
         destinatarioEmail: billingData.billingEmail,
@@ -220,6 +233,11 @@ function BillingShippingStep({
                       <span>Tiempo:</span>
                       <span>{shippingQuote.estimatedDays}</span>
                     </div>
+                  )}
+                  {shippingQuote.message && (
+                    <p style={{ marginTop: '0.35rem', fontSize: '0.8rem', color: '#666', fontStyle: 'italic' }}>
+                      {shippingQuote.message}
+                    </p>
                   )}
                 </div>
               )}

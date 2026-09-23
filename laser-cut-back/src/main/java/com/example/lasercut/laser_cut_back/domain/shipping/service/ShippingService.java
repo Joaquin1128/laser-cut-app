@@ -22,24 +22,14 @@ import com.example.lasercut.laser_cut_back.domain.shipping.provider.ShippingProv
 public class ShippingService {
 
     @Autowired
-    @Qualifier("mockShippingProvider")
-    private ShippingProvider mockShippingProvider;
-    
-    @Autowired(required = false)
-    @Qualifier("andreaniShippingProvider")
-    private ShippingProvider andreaniShippingProvider;
-    
-    @Value("${shipping.provider:mock}")
-    private String providerType;
+    @Qualifier("customShippingProvider")
+    private ShippingProvider customShippingProvider;
 
-    /**
-     * Obtiene el proveedor de envío activo según la configuración
-     */
-    private ShippingProvider getActiveProvider() {
-        if ("andreani".equalsIgnoreCase(providerType) && andreaniShippingProvider != null) {
-            return andreaniShippingProvider;
-        }
-        return mockShippingProvider; // Por defecto usa Mock
+    public ShippingService(ShippingProvider customShippingProvider) {
+        this.customShippingProvider = customShippingProvider;
+    }
+
+    public ShippingService() {
     }
 
     /**
@@ -58,7 +48,7 @@ public class ShippingService {
             request.setTotalWeight(1.0); // 1 kg por defecto
         }
 
-        return getActiveProvider().calculateShipping(request);
+        return customShippingProvider.calculateShipping(request);
     }
 
     /**
@@ -75,4 +65,5 @@ public class ShippingService {
         response.setMessage("Retiro en fábrica sin costo adicional.");
         return response;
     }
+
 }
