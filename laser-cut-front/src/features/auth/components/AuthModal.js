@@ -14,8 +14,10 @@ import '../AuthModal.css';
  * - Cuando se integre MP, aquí se mostrará información de métodos de pago guardados
  * - Se agregará sección: "Métodos de pago guardados"
  */
+const GOOGLE_CLIENT_ID = '602904004408-efb12rp2r93g1o29m43lf1pdbdaa515n.apps.googleusercontent.com';
+
 function AuthModal({ onClose }) {
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -76,6 +78,53 @@ function AuthModal({ onClose }) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
+
+  useEffect(() => {
+    const handleGoogleResponse = async (response) => {
+      if (response?.credential) {
+        setIsLoading(true);
+        setError(null);
+        try {
+          await loginWithGoogle(response.credential);
+          onClose?.();
+        } catch (err) {
+          setError(err.message || 'Error al autenticarse con Google');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    const renderGoogleBtn = () => {
+      if (window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse,
+          });
+
+          const btnContainer = document.getElementById('googleSignInContainer');
+          if (btnContainer) {
+            btnContainer.innerHTML = '';
+            window.google.accounts.id.renderButton(btnContainer, {
+              theme: 'outline',
+              size: 'large',
+              width: '100%',
+              text: isLogin ? 'signin_with' : 'signup_with',
+              shape: 'rectangular',
+              logo_alignment: 'left',
+            });
+          }
+        } catch (e) {
+          console.error('Error inicializando Google Sign-In:', e);
+        }
+      }
+    };
+
+    renderGoogleBtn();
+    const timer = setTimeout(renderGoogleBtn, 300);
+    return () => clearTimeout(timer);
+  }, [isLogin, loginWithGoogle, onClose]);
 
   const handleOverlayClick = (event) => {
     if (event.target === event.currentTarget) {
@@ -217,6 +266,16 @@ function AuthModal({ onClose }) {
                 </button>
               </div>
             )}
+
+            <div className="auth-social-divider">
+              <span className="auth-social-divider-line"></span>
+              <span className="auth-social-divider-text">o</span>
+              <span className="auth-social-divider-line"></span>
+            </div>
+
+            <div className="auth-google-container">
+              <div id="googleSignInContainer"></div>
+            </div>
 
             <div className="auth-form-divider">
               <span className="auth-form-divider-line"></span>

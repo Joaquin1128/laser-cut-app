@@ -40,6 +40,12 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> loginWithGoogle(@Valid @RequestBody com.example.lasercut.laser_cut_back.domain.auth.dto.GoogleLoginRequest request) {
+        AuthResponse response = authService.loginWithGoogle(request);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/me")
     public ResponseEntity<AuthResponse.UserInfo> getCurrentUser(Authentication authentication) {
         String email = authentication.getName();

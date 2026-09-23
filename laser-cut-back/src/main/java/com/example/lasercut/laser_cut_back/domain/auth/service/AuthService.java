@@ -1,11 +1,15 @@
 package com.example.lasercut.laser_cut_back.domain.auth.service;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.lasercut.laser_cut_back.domain.auth.dto.AuthResponse;
+import com.example.lasercut.laser_cut_back.domain.auth.dto.GoogleLoginRequest;
 import com.example.lasercut.laser_cut_back.domain.auth.dto.LoginRequest;
 import com.example.lasercut.laser_cut_back.domain.auth.dto.RegisterRequest;
 import com.example.lasercut.laser_cut_back.domain.auth.model.AppUser;
@@ -13,6 +17,10 @@ import com.example.lasercut.laser_cut_back.domain.auth.model.UserRole;
 import com.example.lasercut.laser_cut_back.domain.auth.repository.UserRepository;
 import com.example.lasercut.laser_cut_back.exception.BadRequestException;
 import com.example.lasercut.laser_cut_back.shared.service.JwtService;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 
 /**
  * Servicio de autenticación
@@ -36,6 +44,30 @@ public class AuthService {
 
     @Autowired
     private JwtService jwtService;
+
+    @Value("${google.client.id:}")
+    private String googleClientId;
+
+    private GoogleIdTokenVerifier googleIdTokenVerifier;
+
+    public void setGoogleIdTokenVerifier(GoogleIdTokenVerifier verifier) {
+        this.googleIdTokenVerifier = verifier;
+    }
+
+    private synchronized GoogleIdTokenVerifier getGoogleIdTokenVerifier() {
+        if (googleIdTokenVerifier == null) {
+            try {
+                googleIdTokenVerifier = new GoogleIdTokenVerifier.Builder(
+                        GoogleNetHttpTransport.newTrustedTransport(),
+                        GsonFactory.getDefaultInstance())
+                        .setAudience(Collections.singletonList(googleClientId))
+                        .build();
+            } catch (Exception e) {
+                throw new RuntimeException("Error al inicializar verificador de Google: " + e.getMessage(), e);
+            }
+        }
+        return googleIdTokenVerifier;
+    }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -111,6 +143,72 @@ public class AuthService {
                 usuario.getEmail(),
                 usuario.getRole().name()
         );
+    }
+
+    @Transactional
+    public AuthResponse loginWithGoogle(GoogleLoginRequest request) {
+        if (request == null || request.getIdToken() == null || request.getIdToken().trim().isEmpty()) {
+            throw new BadRequestException("El ID Token de Google es obligatorio");
+        }
+
+        GoogleIdToken idToken;
+        try {
+            idToken = getGoogleIdTokenVerifier().verify(request.getIdToken());
+        } catch (Exception e) {
+            throw new BadRequestException("Error al verificar token con Google: " + e.getMessage());
+        }
+
+        if (idToken == null) {
+            throw new BadRequestException("Token de Google inválido o expirado");
+        }
+
+        GoogleIdToken.Payload payload = idToken.getPayload();
+        String email = payload.getEmail();
+        String name = (String) payload.get("name");
+        String pictureUrl = (String) payload.get("picture");
+
+        if (email == null || email.trim().isEmpty()) {
+            throw new BadRequestException("No se pudo obtener el email de la cuenta de Google");
+        }
+
+        // Buscar si ya existe el usuario por email
+        AppUser usuario = userRepository.findByEmail(email).orElse(null);
+
+        if (usuario == null) {
+            usuario = new AppUser();
+            usuario.setEmail(email);
+            usuario.setNombre(name != null && !name.trim().isEmpty() ? name : email.split("@")[0]);
+            usuario.setAuthProvider("GOOGLE");
+            usuario.setPictureUrl(pictureUrl);
+            usuario.setRole(UserRole.USER);
+            usuario = userRepository.save(usuario);
+        } else {
+            // Actualizar foto o nombre si no estaban presentes
+            boolean modificado = false;
+            if (pictureUrl != null && usuario.getPictureUrl() == null) {
+                usuario.setPictureUrl(pictureUrl);
+                modificado = true;
+            }
+            if ((usuario.getNombre() == null || usuario.getNombre().isEmpty()) && name != null) {
+                usuario.setNombre(name);
+                modificado = true;
+            }
+            if (modificado) {
+                usuario = userRepository.save(usuario);
+            }
+        }
+
+        // Generar token JWT propio
+        String token = jwtService.generateToken(usuario.getEmail(), usuario.getId());
+
+        AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getEmail(),
+                usuario.getRole().name()
+        );
+
+        return new AuthResponse(token, "Bearer", userInfo);
     }
 
 }

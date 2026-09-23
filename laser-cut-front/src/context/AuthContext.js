@@ -72,6 +72,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (idToken) => {
+    try {
+      const response = await authService.loginWithGoogle(idToken);
+      setUser(response.usuario);
+      setIsAuthenticated(true);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const logout = () => {
     authService.logout();
     setUser(null);
@@ -84,6 +95,7 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     login,
     register,
+    loginWithGoogle,
     logout,
   };
 

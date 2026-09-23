@@ -112,6 +112,37 @@ export const authService = {
     }
   },
 
+  async loginWithGoogle(idToken) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          idToken,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      // Guardar token
+      if (data.token) {
+        authService.setToken(data.token);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error al iniciar sesión con Google:', error);
+      throw error;
+    }
+  },
+
   async getCurrentUser() {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
