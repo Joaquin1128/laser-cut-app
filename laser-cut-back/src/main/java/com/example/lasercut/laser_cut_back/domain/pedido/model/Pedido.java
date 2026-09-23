@@ -72,10 +72,13 @@ public class Pedido {
     private String billingEmail;
 
     @Column(name = "billing_type")
-    private String billingType; // "A" (Factura A), "B" (Factura B), "C" (Factura C), "CONSUMIDOR_FINAL"
+    private String billingType; // "A" (Factura A), "B" (Factura B), "C" (Factura C)
+
+    @Column(name = "tax_condition")
+    private String taxCondition; // "CONSUMIDOR_FINAL", "RESPONSABLE_INSCRIPTO", "MONOTRIBUTO"
 
     @Column(name = "fiscal_id")
-    private String fiscalId; // DNI (para Factura C)
+    private String fiscalId; // CUIT o DNI
 
     @Column(name = "billing_phone")
     private String billingPhone; // Teléfono de contacto
@@ -261,6 +264,14 @@ public class Pedido {
 
     public void setBillingType(String billingType) {
         this.billingType = billingType;
+    }
+
+    public String getTaxCondition() {
+        return taxCondition;
+    }
+
+    public void setTaxCondition(String taxCondition) {
+        this.taxCondition = taxCondition;
     }
 
     public String getFiscalId() {

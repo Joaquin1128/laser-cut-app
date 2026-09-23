@@ -40,8 +40,9 @@ function CheckoutPage() {
   const [billingData, setBillingData] = useState({
     billingName: '',
     billingEmail: '',
-    billingType: 'C', // Siempre tipo C
-    fiscalId: '', // DNI
+    taxCondition: 'CONSUMIDOR_FINAL', // CONSUMIDOR_FINAL, RESPONSABLE_INSCRIPTO, MONOTRIBUTO
+    billingType: 'B', // Factura B o A
+    fiscalId: '', // DNI o CUIT
     billingPhone: '', // Teléfono
   });
 
@@ -89,7 +90,10 @@ function CheckoutPage() {
         quantity: item.cantidad || 1,
         unitPrice: item.precioUnitario || 0,
         totalPrice: item.precioTotal || 0,
+        archivoId: item.archivo?.archivoId || null,
+        archivoNombre: item.archivo?.nombre || null,
         metadata: JSON.stringify({
+          archivoId: item.archivo?.archivoId || null,
           archivoNombre: item.archivo?.nombre,
           dimensiones: item.archivo?.dimensiones,
           terminacion: item.terminacion,

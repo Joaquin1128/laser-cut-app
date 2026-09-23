@@ -25,6 +25,7 @@ public class PedidoResponse {
     private String billingName;
     private String billingEmail;
     private String billingType;
+    private String taxCondition;
     private String fiscalId;
     private String billingPhone;
 
@@ -61,6 +62,7 @@ public class PedidoResponse {
         this.billingName = pedido.getBillingName();
         this.billingEmail = pedido.getBillingEmail();
         this.billingType = pedido.getBillingType();
+        this.taxCondition = pedido.getTaxCondition();
         this.fiscalId = pedido.getFiscalId();
         this.billingPhone = pedido.getBillingPhone();
 
@@ -167,6 +169,14 @@ public class PedidoResponse {
 
     public void setFiscalId(String fiscalId) {
         this.fiscalId = fiscalId;
+    }
+
+    public String getTaxCondition() {
+        return taxCondition;
+    }
+
+    public void setTaxCondition(String taxCondition) {
+        this.taxCondition = taxCondition;
     }
 
     public String getBillingPhone() {

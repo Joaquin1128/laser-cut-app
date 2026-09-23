@@ -32,6 +32,8 @@ public class PedidoItemRequest {
     private BigDecimal totalPrice;
 
     private String metadata; // Opcional: JSON con información adicional (nombre archivo, dimensiones, terminación, etc.)
+    private String archivoId;
+    private String archivoNombre;
 
     public PedidoItemRequest() {
     }
@@ -83,5 +85,21 @@ public class PedidoItemRequest {
     public void setMetadata(String metadata) {
         this.metadata = metadata;
     }
-    
+
+    public String getArchivoId() {
+        return archivoId;
+    }
+
+    public void setArchivoId(String archivoId) {
+        this.archivoId = archivoId;
+    }
+
+    public String getArchivoNombre() {
+        return archivoNombre;
+    }
+
+    public void setArchivoNombre(String archivoNombre) {
+        this.archivoNombre = archivoNombre;
+    }
+
 }

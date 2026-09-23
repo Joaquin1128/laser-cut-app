@@ -39,6 +39,12 @@ public class PedidoItem {
     @Column(columnDefinition = "TEXT")
     private String metadata; // JSON string para información adicional: nombre archivo, dimensiones, terminación, etc.
 
+    @Column(name = "archivo_id")
+    private String archivoId;
+
+    @Column(name = "archivo_nombre")
+    private String archivoNombre;
+
     public PedidoItem() {
     }
 
@@ -113,6 +119,22 @@ public class PedidoItem {
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
+    }
+
+    public String getArchivoId() {
+        return archivoId;
+    }
+
+    public void setArchivoId(String archivoId) {
+        this.archivoId = archivoId;
+    }
+
+    public String getArchivoNombre() {
+        return archivoNombre;
+    }
+
+    public void setArchivoNombre(String archivoNombre) {
+        this.archivoNombre = archivoNombre;
     }
 
 }

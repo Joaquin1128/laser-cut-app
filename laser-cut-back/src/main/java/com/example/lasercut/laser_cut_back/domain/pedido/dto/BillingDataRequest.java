@@ -15,14 +15,17 @@ public class BillingDataRequest {
     @Email(message = "El email debe tener un formato válido")
     private String billingEmail;
 
-    @NotBlank(message = "El DNI es obligatorio")
-    private String fiscalId; // DNI para Factura C
+    @NotBlank(message = "El CUIT o DNI es obligatorio")
+    private String fiscalId; // CUIT (11 dígitos) o DNI (7-8 dígitos)
 
     @NotBlank(message = "El teléfono es obligatorio")
     private String billingPhone; // Teléfono de contacto
 
-    // billingType siempre será tipo C
-    private String billingType; // Siempre será "C"
+    // "CONSUMIDOR_FINAL", "RESPONSABLE_INSCRIPTO", "MONOTRIBUTO"
+    private String taxCondition;
+
+    // "A", "B", "C"
+    private String billingType;
 
     public BillingDataRequest() {
     }
@@ -66,4 +69,13 @@ public class BillingDataRequest {
     public void setBillingPhone(String billingPhone) {
         this.billingPhone = billingPhone;
     }
+
+    public String getTaxCondition() {
+        return taxCondition;
+    }
+
+    public void setTaxCondition(String taxCondition) {
+        this.taxCondition = taxCondition;
+    }
+
 }

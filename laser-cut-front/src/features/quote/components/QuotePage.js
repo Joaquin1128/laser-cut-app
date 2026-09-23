@@ -43,6 +43,7 @@ function QuotePage() {
     
     const cartItem = {
       archivo: {
+        archivoId: fileData?.archivoId || null,
         nombre: file?.name || 'Sin nombre',
         dimensiones: `${quoteData.ancho} × ${quoteData.alto} mm`,
         urlPreview: previewUrl,

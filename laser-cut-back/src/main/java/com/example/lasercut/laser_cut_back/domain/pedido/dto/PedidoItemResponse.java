@@ -16,6 +16,8 @@ public class PedidoItemResponse {
     private BigDecimal unitPrice;
     private BigDecimal totalPrice;
     private String metadata;
+    private String archivoId;
+    private String archivoNombre;
 
     public PedidoItemResponse() {
     }
@@ -28,6 +30,8 @@ public class PedidoItemResponse {
         this.unitPrice = item.getUnitPrice();
         this.totalPrice = item.getTotalPrice();
         this.metadata = item.getMetadata();
+        this.archivoId = item.getArchivoId();
+        this.archivoNombre = item.getArchivoNombre();
     }
 
     public Long getId() {
@@ -84,6 +88,22 @@ public class PedidoItemResponse {
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
+    }
+
+    public String getArchivoId() {
+        return archivoId;
+    }
+
+    public void setArchivoId(String archivoId) {
+        this.archivoId = archivoId;
+    }
+
+    public String getArchivoNombre() {
+        return archivoNombre;
+    }
+
+    public void setArchivoNombre(String archivoNombre) {
+        this.archivoNombre = archivoNombre;
     }
 
 }

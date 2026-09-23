@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../../../context/CartContext';
 import { ordersService } from '../../../services/ordersService';
+import { isValidCuit } from '../../../utils/cuitValidator';
 import '../CheckoutSteps.css';
 
 function BillingShippingStep({
@@ -26,6 +27,15 @@ function BillingShippingStep({
     setBillingData(prev => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleTaxConditionChange = (condition) => {
+    const isRI = condition === 'RESPONSABLE_INSCRIPTO';
+    setBillingData(prev => ({
+      ...prev,
+      taxCondition: condition,
+      billingType: isRI ? 'A' : 'B',
     }));
   };
 
@@ -95,13 +105,36 @@ function BillingShippingStep({
         <div className="billing-shipping-layout">
           {/* Columna izquierda: Formulario */}
           <div className="billing-shipping-form">
+            {/* Selector de Condición Fiscal */}
+            <div className="form-section">
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem', display: 'block' }}>
+                Condición Fiscal y Tipo de Factura *
+              </label>
+              <select
+                className="auth-form-input"
+                value={billingData.taxCondition || 'CONSUMIDOR_FINAL'}
+                onChange={(e) => handleTaxConditionChange(e.target.value)}
+                style={{ cursor: 'pointer', fontWeight: '500', backgroundColor: '#f8fafc' }}
+              >
+                <option value="CONSUMIDOR_FINAL">Consumidor Final (Factura B)</option>
+                <option value="RESPONSABLE_INSCRIPTO">Responsable Inscripto (Factura A)</option>
+                <option value="MONOTRIBUTO">Monotributista / Exento (Factura B)</option>
+              </select>
+            </div>
+
             <div className="form-section">
               <input
                 type="text"
                 className="auth-form-input"
                 value={billingData.billingName}
                 onChange={(e) => handleBillingChange('billingName', e.target.value)}
-                placeholder="Nombre y Apellido *"
+                placeholder={
+                  billingData.taxCondition === 'RESPONSABLE_INSCRIPTO'
+                    ? "Razón Social *"
+                    : billingData.taxCondition === 'MONOTRIBUTO'
+                    ? "Razón Social o Nombre Fantasía *"
+                    : "Nombre y Apellido *"
+                }
                 required
               />
             </div>
@@ -111,10 +144,32 @@ function BillingShippingStep({
                 type="text"
                 className="auth-form-input"
                 value={billingData.fiscalId}
-                onChange={(e) => handleBillingChange('fiscalId', e.target.value)}
-                placeholder="DNI *"
+                onChange={(e) => handleBillingChange('fiscalId', e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder={
+                  billingData.taxCondition === 'RESPONSABLE_INSCRIPTO' || billingData.taxCondition === 'MONOTRIBUTO'
+                    ? "CUIT (11 dígitos sin guiones) *"
+                    : "DNI (7 u 8 dígitos) *"
+                }
+                maxLength={
+                  billingData.taxCondition === 'RESPONSABLE_INSCRIPTO' || billingData.taxCondition === 'MONOTRIBUTO'
+                    ? 11
+                    : 8
+                }
                 required
               />
+              {(billingData.taxCondition === 'RESPONSABLE_INSCRIPTO' || billingData.taxCondition === 'MONOTRIBUTO') && billingData.fiscalId && (
+                <div style={{ marginTop: '0.3rem', fontSize: '0.8rem' }}>
+                  {billingData.fiscalId.length === 11 ? (
+                    isValidCuit(billingData.fiscalId) ? (
+                      <span style={{ color: '#16a34a', fontWeight: '500' }}>✓ CUIT válido para Factura {billingData.billingType || 'A'}</span>
+                    ) : (
+                      <span style={{ color: '#dc2626', fontWeight: '500' }}>✕ CUIT inválido (verifique los números ingresados)</span>
+                    )
+                  ) : (
+                    <span style={{ color: '#64748b' }}>Ingresá 11 dígitos ({billingData.fiscalId.length}/11)</span>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="form-section">

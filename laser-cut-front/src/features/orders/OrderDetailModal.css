@@ -462,3 +462,116 @@
     max-height: 300px;
   }
 }
+
+/* ==========================================================================
+   Estilos de Facturación Fiscal, Envío y Archivos DXF
+   ========================================================================== */
+
+.badge-factura {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-left: 0.6rem;
+  vertical-align: middle;
+}
+
+.badge-factura-a {
+  background: #1e40af;
+  color: #ffffff;
+}
+
+.badge-factura-b {
+  background: #0369a1;
+  color: #ffffff;
+}
+
+.badge-factura-c {
+  background: #475569;
+  color: #ffffff;
+}
+
+.highlight-fiscal {
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.5px;
+}
+
+.order-detail-modal-fiscal,
+.order-detail-modal-shipping {
+  margin-bottom: 1.5rem;
+  padding: 1.1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.order-detail-item-pricing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.btn-download-dxf {
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-download-dxf:hover:not(:disabled) {
+  background: #0369a1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(2, 132, 199, 0.25);
+}
+
+.btn-download-dxf:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-admin-resend-email {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-admin-resend-email:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn-admin-resend-email:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.total-row-highlight {
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+

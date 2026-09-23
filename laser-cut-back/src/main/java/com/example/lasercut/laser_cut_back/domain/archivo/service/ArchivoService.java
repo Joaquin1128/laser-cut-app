@@ -19,6 +19,12 @@ public class ArchivoService {
 
     private static final Logger logger = LoggerFactory.getLogger(ArchivoService.class);
 
+    private final DxfStorageService dxfStorageService;
+
+    public ArchivoService(DxfStorageService dxfStorageService) {
+        this.dxfStorageService = dxfStorageService;
+    }
+
     public ArchivoResponse analizar(MultipartFile archivo) throws IOException {
         if (archivo == null || archivo.isEmpty()) {
             throw new BadRequestException("El archivo DXF no puede estar vacío.");
@@ -39,13 +45,16 @@ public class ArchivoService {
             try (InputStream previewStream = new ByteArrayInputStream(fileBytes)) {
                 String vistaPrevia = DxfPreviewGenerator.generarVistaPreviaBase64(previewStream);
 
+                String archivoId = dxfStorageService.store(archivo);
+
                 ArchivoResponse resp = new ArchivoResponse();
+                resp.setArchivoId(archivoId);
                 resp.setNombre(name);
                 resp.setAncho(ancho);
                 resp.setAlto(alto);
                 resp.setVistaPreviaBase64(vistaPrevia);
 
-                logger.info("Archivo analizado: {} (ancho={}mm, alto={}mm)", name, ancho, alto);
+                logger.info("Archivo analizado y almacenado: {} (id={}, ancho={}mm, alto={}mm)", name, archivoId, ancho, alto);
 
                 return resp;
             }

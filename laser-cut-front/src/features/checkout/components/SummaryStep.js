@@ -49,12 +49,28 @@ function SummaryStep({
               <h4 className="summary-section-title">Datos de Facturación</h4>
               <div className="summary-data">
                 <div className="summary-data-row">
-                  <span>Nombre y Apellido:</span>
-                  <span>{billingData.billingName}</span>
+                  <span>Comprobante:</span>
+                  <span style={{ fontWeight: 'bold', color: '#2563eb' }}>
+                    Factura {billingData.billingType || 'B'}
+                  </span>
                 </div>
                 <div className="summary-data-row">
-                  <span>DNI:</span>
-                  <span>{billingData.fiscalId}</span>
+                  <span>Condición Fiscal:</span>
+                  <span>
+                    {billingData.taxCondition === 'RESPONSABLE_INSCRIPTO'
+                      ? 'Responsable Inscripto'
+                      : billingData.taxCondition === 'MONOTRIBUTO'
+                      ? 'Monotributo / Exento'
+                      : 'Consumidor Final'}
+                  </span>
+                </div>
+                <div className="summary-data-row">
+                  <span>{billingData.taxCondition === 'RESPONSABLE_INSCRIPTO' || billingData.taxCondition === 'MONOTRIBUTO' ? 'CUIT:' : 'DNI:'}</span>
+                  <span style={{ fontWeight: '600' }}>{billingData.fiscalId}</span>
+                </div>
+                <div className="summary-data-row">
+                  <span>{billingData.taxCondition === 'RESPONSABLE_INSCRIPTO' ? 'Razón Social:' : 'Nombre / Titular:'}</span>
+                  <span>{billingData.billingName}</span>
                 </div>
                 <div className="summary-data-row">
                   <span>Email:</span>

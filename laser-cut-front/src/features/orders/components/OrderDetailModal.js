@@ -5,6 +5,8 @@ import '../OrderDetailModal.css';
 function OrderDetailModal({ pedido, onClose, showCustomerInfo = false, onStatusUpdated }) {
   const [currentPedido, setCurrentPedido] = useState(pedido);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
@@ -113,6 +115,34 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false, onStatusU
     }
   };
 
+  const handleDescargarDxf = async (pedidoId, itemId, filename) => {
+    try {
+      setIsDownloading(true);
+      await ordersService.descargarDxfItem(pedidoId, itemId, filename);
+    } catch (err) {
+      alert(err.message || 'No se pudo descargar el archivo DXF');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleReenviarEmail = async () => {
+    if (!window.confirm(`¿Reenviar la ficha del Pedido #${currentPedido.id} por email a la casilla de la empresa?`)) {
+      return;
+    }
+    setIsResendingEmail(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    try {
+      await ordersService.reenviarEmailFichaAdmin(currentPedido.id);
+      setSuccessMsg(`Ficha del pedido #${currentPedido.id} reenviada con éxito por correo.`);
+    } catch (err) {
+      setErrorMsg(err.message || 'Error al reenviar el correo de la ficha');
+    } finally {
+      setIsResendingEmail(false);
+    }
+  };
+
   return (
     <div
       className="order-detail-modal-overlay"
@@ -146,7 +176,66 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false, onStatusU
           <span className="order-detail-value">{formatearFecha(currentPedido.createdAt)}</span>
         </div>
 
-        {(showCustomerInfo && (currentPedido.customerNombre || currentPedido.customerEmail)) && (
+        {/* Sección Datos de Facturación (Ficha Fiscal) */}
+        {(currentPedido.billingName || currentPedido.fiscalId || currentPedido.billingType) && (
+          <div className="order-detail-modal-fiscal">
+            <h3 className="order-detail-section-title">
+              📋 Datos de Facturación
+              <span className={`badge-factura badge-factura-${(currentPedido.billingType || 'B').toLowerCase()}`}>
+                Factura {currentPedido.billingType || 'B'}
+              </span>
+            </h3>
+            <div className="order-detail-item-row">
+              <span className="order-detail-label">Condición Fiscal:</span>
+              <span className="order-detail-value">
+                {currentPedido.taxCondition === 'RESPONSABLE_INSCRIPTO'
+                  ? 'Responsable Inscripto'
+                  : currentPedido.taxCondition === 'MONOTRIBUTO'
+                  ? 'Monotributo / Exento'
+                  : 'Consumidor Final'}
+              </span>
+            </div>
+            <div className="order-detail-item-row">
+              <span className="order-detail-label">{currentPedido.taxCondition === 'RESPONSABLE_INSCRIPTO' || currentPedido.taxCondition === 'MONOTRIBUTO' ? 'CUIT:' : 'DNI:'}</span>
+              <span className="order-detail-value highlight-fiscal">{currentPedido.fiscalId || '--'}</span>
+            </div>
+            <div className="order-detail-item-row">
+              <span className="order-detail-label">{currentPedido.taxCondition === 'RESPONSABLE_INSCRIPTO' ? 'Razón Social:' : 'Nombre / Titular:'}</span>
+              <span className="order-detail-value">{currentPedido.billingName || '--'}</span>
+            </div>
+            <div className="order-detail-item-row">
+              <span className="order-detail-label">Email de contacto:</span>
+              <span className="order-detail-value">{currentPedido.billingEmail || currentPedido.customerEmail || '--'}</span>
+            </div>
+            <div className="order-detail-item-row">
+              <span className="order-detail-label">Teléfono:</span>
+              <span className="order-detail-value">{currentPedido.billingPhone || '--'}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Sección Dirección de Envío */}
+        {(currentPedido.shippingAddressStreet || currentPedido.shippingType) && (
+          <div className="order-detail-modal-shipping">
+            <h3 className="order-detail-section-title">📦 Datos de Entrega</h3>
+            <div className="order-detail-item-row">
+              <span className="order-detail-label">Modalidad:</span>
+              <span className="order-detail-value">{currentPedido.shippingType === 'PICKUP' ? 'Retiro en fábrica' : 'Envío a domicilio'}</span>
+            </div>
+            {currentPedido.shippingAddressStreet && (
+              <div className="order-detail-item-row">
+                <span className="order-detail-label">Dirección:</span>
+                <span className="order-detail-value">
+                  {currentPedido.shippingAddressStreet}
+                  {currentPedido.shippingAddressUnit ? ` (${currentPedido.shippingAddressUnit})` : ''}
+                  {`, ${currentPedido.shippingAddressCity || ''}, CP ${currentPedido.shippingAddressPostalCode || ''}, ${currentPedido.shippingAddressProvince || ''}`}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {(!currentPedido.billingName && showCustomerInfo && (currentPedido.customerNombre || currentPedido.customerEmail)) && (
           <div className="order-detail-modal-customer">
             <h3 className="order-detail-section-title">Cliente</h3>
             <div className="order-detail-item-row">
@@ -166,20 +255,21 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false, onStatusU
             <div className="order-detail-items-list">
               {currentPedido.items.map((item) => {
                 const metadata = parseMetadata(item.metadata);
+                const nombrePieza = item.archivoNombre || metadata?.archivoNombre || `Pieza #${item.id}`;
                 return (
                   <div key={item.id} className="order-detail-item">
                     <div className="order-detail-item-preview">
                       {metadata?.urlPreview && (
                         <img
                           src={metadata.urlPreview}
-                          alt={metadata.archivoNombre || 'Pieza'}
+                          alt={nombrePieza}
                           className="order-detail-item-image"
                         />
                       )}
                     </div>
                     <div className="order-detail-item-info">
                       <h4 className="order-detail-item-name">
-                        {metadata?.archivoNombre || 'Pieza sin nombre'}
+                        {nombrePieza}
                       </h4>
                       <div className="order-detail-item-details">
                         <div className="order-detail-item-row">
@@ -217,6 +307,15 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false, onStatusU
                         <span className="order-detail-label">Subtotal:</span>
                         <span className="order-detail-price highlight">{formatearPrecio(item.totalPrice)}</span>
                       </div>
+                      <button
+                        type="button"
+                        className="btn-download-dxf"
+                        onClick={() => handleDescargarDxf(currentPedido.id, item.id, nombrePieza.endsWith('.dxf') ? nombrePieza : `${nombrePieza}.dxf`)}
+                        disabled={isDownloading}
+                        title="Descargar archivo DXF original para corte"
+                      >
+                        📥 Descargar DXF
+                      </button>
                     </div>
                   </div>
                 );
@@ -229,8 +328,18 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false, onStatusU
 
         <div className="order-detail-modal-summary">
           <div className="order-detail-summary-row">
-            <span className="order-detail-label">Total del pedido:</span>
-            <span className="order-detail-total highlight">{formatearPrecio(currentPedido.totalPrice)}</span>
+            <span className="order-detail-label">Subtotal piezas:</span>
+            <span className="order-detail-value">{formatearPrecio(currentPedido.totalPrice)}</span>
+          </div>
+          <div className="order-detail-summary-row">
+            <span className="order-detail-label">Costo de envío:</span>
+            <span className="order-detail-value">{formatearPrecio(currentPedido.shippingCost || 0)}</span>
+          </div>
+          <div className="order-detail-summary-row total-row-highlight">
+            <span className="order-detail-label">Total pagado:</span>
+            <span className="order-detail-total highlight">
+              {formatearPrecio(currentPedido.totalWithShipping || ((currentPedido.totalPrice || 0) + (currentPedido.shippingCost || 0)))}
+            </span>
           </div>
           {currentPedido.paymentStatus && (
             <div className="order-detail-summary-row">
@@ -354,6 +463,21 @@ function OrderDetailModal({ pedido, onClose, showCustomerInfo = false, onStatusU
                   ✕ Este pedido fue cancelado. No se pueden realizar más cambios.
                 </div>
               )}
+            </div>
+
+            <div className="order-admin-email-row" style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px dashed #cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                Ficha del pedido y archivos DXF:
+              </span>
+              <button
+                type="button"
+                className="btn-admin-resend-email"
+                disabled={isResendingEmail}
+                onClick={handleReenviarEmail}
+                title="Reenviar la ficha con DXFs adjuntos al email de la empresa"
+              >
+                {isResendingEmail ? 'Reenviando...' : '✉ Reenviar Ficha por Email'}
+              </button>
             </div>
           </div>
         )}

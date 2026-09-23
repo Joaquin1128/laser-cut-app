@@ -40,6 +40,12 @@ public class PedidoService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private com.example.lasercut.laser_cut_back.domain.archivo.service.DxfStorageService dxfStorageService;
+
+    @Autowired
+    private OrderEmailService orderEmailService;
+
     @Transactional
     public PedidoResponse crearPedido(Long userId, CreatePedidoRequest request) {
         AppUser usuario = userRepository.findById(userId)
@@ -66,6 +72,12 @@ public class PedidoService {
 
             if (itemRequest.getMetadata() != null) {
                 item.setMetadata(itemRequest.getMetadata());
+            }
+            if (itemRequest.getArchivoId() != null) {
+                item.setArchivoId(itemRequest.getArchivoId());
+            }
+            if (itemRequest.getArchivoNombre() != null) {
+                item.setArchivoNombre(itemRequest.getArchivoNombre());
             }
 
             pedido.addItem(item);
@@ -140,15 +152,19 @@ public class PedidoService {
         
         // Actualizar estado del pedido según el pago
         if (status == Pedido.PaymentStatus.APPROVED) {
-            // Si el pago es aprobado, marcar como PAID primero, luego puede pasar a EN_PROCESO
+            // Si el pago es aprobado, marcar como PAID
             pedido.setStatus(Pedido.OrderStatus.PAID);
-            // También mantener EN_PROCESO para compatibilidad con flujos anteriores
-            // pedido.setStatus(Pedido.OrderStatus.EN_PROCESO);
         } else if (status == Pedido.PaymentStatus.REJECTED || status == Pedido.PaymentStatus.CANCELLED) {
             pedido.setStatus(Pedido.OrderStatus.CANCELADO);
         }
         
-        pedidoRepository.save(pedido);
+        pedido = pedidoRepository.save(pedido);
+
+        if (status == Pedido.PaymentStatus.APPROVED) {
+            if (orderEmailService != null) {
+                orderEmailService.enviarFichaPedidoAdmin(pedido);
+            }
+        }
     }
 
     /**
@@ -172,9 +188,30 @@ public class PedidoService {
         // Actualizar datos de facturación
         pedido.setBillingName(request.getBillingName());
         pedido.setBillingEmail(request.getBillingEmail());
-        pedido.setBillingType("C"); // Siempre tipo C
-        pedido.setFiscalId(request.getFiscalId()); // DNI
-        pedido.setBillingPhone(request.getBillingPhone()); // Teléfono
+        pedido.setBillingPhone(request.getBillingPhone());
+
+        String taxCondition = request.getTaxCondition() != null ? request.getTaxCondition().trim() : "CONSUMIDOR_FINAL";
+        pedido.setTaxCondition(taxCondition);
+
+        String billingType = request.getBillingType();
+        if (billingType == null || billingType.isBlank()) {
+            billingType = "RESPONSABLE_INSCRIPTO".equalsIgnoreCase(taxCondition) ? "A" : "B";
+        }
+        pedido.setBillingType(billingType.toUpperCase());
+
+        String fiscalId = request.getFiscalId() != null ? request.getFiscalId().trim() : "";
+        if ("RESPONSABLE_INSCRIPTO".equalsIgnoreCase(taxCondition) || "A".equalsIgnoreCase(billingType)) {
+            if (!com.example.lasercut.laser_cut_back.shared.util.CuitValidator.isValidCuit(fiscalId)) {
+                throw new BadRequestException("El CUIT ingresado no es válido para Factura A.");
+            }
+            pedido.setFiscalId(com.example.lasercut.laser_cut_back.shared.util.CuitValidator.cleanCuit(fiscalId));
+        } else {
+            String clean = fiscalId.replaceAll("[^0-9]", "");
+            if (clean.length() < 7 || clean.length() > 11) {
+                throw new BadRequestException("El DNI o CUIT debe tener entre 7 y 11 dígitos numéricos.");
+            }
+            pedido.setFiscalId(clean);
+        }
 
         pedido = pedidoRepository.save(pedido);
         return new PedidoResponse(pedido);
@@ -363,7 +400,80 @@ public class PedidoService {
         pedido.setStatus(nuevoEstado);
         pedido = pedidoRepository.save(pedido);
 
+        if (nuevoEstado == Pedido.OrderStatus.PAID) {
+            if (orderEmailService != null) {
+                orderEmailService.enviarFichaPedidoAdmin(pedido);
+            }
+        }
+
         return new PedidoWithCustomerResponse(pedido);
     }
-    
+
+    /**
+     * Reenvía manualmente la ficha del pedido por email al admin.
+     */
+    public void reenviarFichaAdmin(Long pedidoId) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+        if (orderEmailService != null) {
+            orderEmailService.enviarFichaPedidoAdmin(pedido);
+        }
+    }
+
+    /**
+     * Recupera el recurso DXF de un item del pedido para descarga.
+     * Solo accesible para el usuario dueño del pedido o un usuario ADMIN.
+     */
+    public org.springframework.core.io.Resource obtenerRecursoDxfItem(Long pedidoId, Long itemId, AppUser usuario) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+        boolean isAdmin = usuario.getRole() == com.example.lasercut.laser_cut_back.domain.auth.model.UserRole.ADMIN;
+        if (!isAdmin && !pedido.getUsuario().getId().equals(usuario.getId())) {
+            throw new BadRequestException("No tienes permiso para acceder a este archivo");
+        }
+
+        PedidoItem item = pedido.getItems().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Item no encontrado en el pedido"));
+
+        String archivoId = item.getArchivoId();
+        if (archivoId == null && item.getMetadata() != null) {
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(item.getMetadata());
+                if (node.has("archivoId")) {
+                    archivoId = node.get("archivoId").asText();
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (archivoId == null || archivoId.isBlank()) {
+            throw new BadRequestException("El item no tiene un archivo DXF registrado.");
+        }
+
+        return dxfStorageService.loadAsResource(archivoId);
+    }
+
+    /**
+     * Retorna el nombre de archivo amigable para la descarga del DXF.
+     */
+    public String obtenerNombreDxfItem(Long pedidoId, Long itemId) {
+        Pedido pedido = obtenerPedidoEntity(pedidoId);
+        PedidoItem item = pedido.getItems().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Item no encontrado en el pedido"));
+
+        if (item.getArchivoNombre() != null && !item.getArchivoNombre().isBlank()) {
+            return item.getArchivoNombre();
+        }
+        if (item.getMetadata() != null) {
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(item.getMetadata());
+                if (node.has("archivoNombre")) {
+                    return node.get("archivoNombre").asText();
+                }
+            } catch (Exception ignored) {}
+        }
+        return "pieza_" + itemId + ".dxf";
+    }
+
 }

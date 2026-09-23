@@ -2,6 +2,7 @@ package com.example.lasercut.laser_cut_back.domain.archivo.dto;
 
 public class ArchivoResponse {
 
+    private String archivoId;
     private String nombre;
     private double ancho;
     private double alto;
@@ -10,11 +11,20 @@ public class ArchivoResponse {
     public ArchivoResponse() {
     }
 
-    public ArchivoResponse(String nombre, double ancho, double alto, String vistaPreviaBase64) {
+    public ArchivoResponse(String archivoId, String nombre, double ancho, double alto, String vistaPreviaBase64) {
+        this.archivoId = archivoId;
         this.nombre = nombre;
         this.ancho = ancho;
         this.alto = alto;
         this.vistaPreviaBase64 = vistaPreviaBase64;
+    }
+
+    public String getArchivoId() {
+        return archivoId;
+    }
+
+    public void setArchivoId(String archivoId) {
+        this.archivoId = archivoId;
     }
 
     public String getNombre() {

@@ -120,6 +120,27 @@ public class PedidoController {
         return ResponseEntity.ok(actualizado);
     }
 
+    /**
+     * Reenvía la ficha del pedido por email al admin.
+     * Solo accesible para usuarios con rol ADMIN.
+     */
+    @PostMapping("/admin/{id}/resend-email")
+    public ResponseEntity<Void> reenviarEmailFichaAdmin(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        AppUser usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getRole() != UserRole.ADMIN) {
+            return ResponseEntity.status(403).build();
+        }
+
+        pedidoService.reenviarFichaAdmin(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<PedidoResponse> obtenerPedido(
             @PathVariable Long id,
@@ -320,5 +341,28 @@ public class PedidoController {
         PedidoResponse pedido = pedidoService.prepararPago(id, usuario.getId());
         return ResponseEntity.ok(pedido);
     }
-    
+
+    /**
+     * Descarga del archivo DXF asociado a un item del pedido.
+     * Solo accesible para el usuario dueño del pedido o un ADMIN.
+     */
+    @GetMapping("/{pedidoId}/items/{itemId}/dxf")
+    public ResponseEntity<org.springframework.core.io.Resource> descargarDxf(
+            @PathVariable Long pedidoId,
+            @PathVariable Long itemId,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        AppUser usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        org.springframework.core.io.Resource resource = pedidoService.obtenerRecursoDxfItem(pedidoId, itemId, usuario);
+        String filename = pedidoService.obtenerNombreDxfItem(pedidoId, itemId);
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "application/octet-stream")
+                .body(resource);
+    }
+
 }

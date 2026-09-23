@@ -336,4 +336,55 @@ export const ordersService = {
       throw error;
     }
   },
+
+  /**
+   * Descarga el archivo DXF original de un item
+   */
+  async descargarDxfItem(pedidoId, itemId, filename = 'pieza.dxf') {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/${pedidoId}/items/${itemId}/dxf`, {
+        method: 'GET',
+        headers: authService.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: No se pudo descargar el archivo`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error al descargar DXF:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Reenvía la ficha por correo al admin
+   */
+  async reenviarEmailFichaAdmin(pedidoId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/admin/${pedidoId}/resend-email`, {
+        method: 'POST',
+        headers: authService.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error ${response.status}: No se pudo reenviar el email`);
+      }
+      return true;
+    } catch (error) {
+      console.error('Error al reenviar email de ficha:', error);
+      throw error;
+    }
+  },
 };
